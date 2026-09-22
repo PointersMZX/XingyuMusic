@@ -1,34 +1,50 @@
-/* ===== XingyuMusic · 液态玻璃 =====
-   全局打在 #toolbar / #player / #left 三个布局容器上，不改动任何组件。
-   玻璃边缘高光/底色取自主题变量：
-   - 紫金黑主题定义了 --color-glass-edge（金色发丝线）与 --color-glass-tint（紫色玻璃底色）
-   - 其他主题未定义时回落为主色 alpha 系，保持观感统一
-   参考 Metric v1.4.3 液态玻璃底栏（磨砂 + 折射高光 + 边缘光）。 */
+/* ===== XingyuMusic · 液态玻璃 v2 =====
+   全局作用于 #toolbar / #player / #left，不改动组件。
+   观感基准 = Metric v1.4.3 液态玻璃底栏：
+   - 磨砂折射（backdrop blur + saturate）
+   - 顶部白色高光发丝线 + 金色边缘光
+   - 底栏悬浮圆角板（floating slab）
+   - 紫色外晕（glow）
+   玻璃参数走主题变量：紫金黑主题定义了
+   --color-glass-edge / --color-glass-tint / --color-content-background（半透舞台底），
+   其他主题未定义时回落为主色 alpha 系，保持观感统一。 */
 
+/* 通用玻璃板 */
 .xingyu-glass() {
-  backdrop-filter: blur(26px) saturate(1.55);
-  -webkit-backdrop-filter: blur(26px) saturate(1.55);
-  border-top: 1px solid var(--color-glass-edge, var(--color-primary-alpha-300));
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
-    0 -8px 24px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(30px) saturate(1.7);
+  -webkit-backdrop-filter: blur(30px) saturate(1.7);
 }
 
+/* 顶栏：玻璃面板 + 底部金色发丝线 */
 #toolbar {
   .xingyu-glass();
-  background: linear-gradient(180deg, var(--color-glass-tint, var(--color-primary-alpha-200)) 0%, transparent 78%);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 55%, transparent 100%),
+    var(--color-glass-tint, var(--color-primary-alpha-200));
+  border-bottom: 1px solid var(--color-glass-edge, var(--color-primary-alpha-300));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 6px 24px rgba(0, 0, 0, 0.22);
 }
 
+/* 底栏：悬浮圆角玻璃板 */
 #player {
   .xingyu-glass();
-  background: linear-gradient(0deg, var(--color-glass-tint, var(--color-primary-alpha-200)) 0%, transparent 82%);
-  border-radius: 14px 14px 0 0;
+  margin: 8px 10px 10px;
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.03) 45%, var(--color-glass-tint, var(--color-primary-alpha-300)) 100%),
+    var(--color-main-background, rgba(0, 0, 0, 0.45));
+  border: 1px solid var(--color-glass-edge, var(--color-primary-alpha-300));
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 -4px 40px rgba(124, 32, 194, 0.32);
 }
 
+/* 侧栏：左缘玻璃渐隐 + 金色右缘发丝线 */
 #left {
-  backdrop-filter: blur(22px) saturate(1.4);
-  -webkit-backdrop-filter: blur(22px) saturate(1.4);
-  background: linear-gradient(90deg, var(--color-glass-tint, var(--color-primary-alpha-200)) 0%, transparent 70%);
+  .xingyu-glass();
+  background: linear-gradient(90deg, var(--color-glass-tint, var(--color-primary-alpha-300)) 0%, transparent 88%);
   border-right: 1px solid var(--color-glass-edge, var(--color-primary-alpha-200));
 }

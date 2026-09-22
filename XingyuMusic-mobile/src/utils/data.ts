@@ -19,7 +19,6 @@ const ignoreVersionFailTipTimeKey = storageDataPrefix.ignoreVersionFailTipTimeKe
 const searchSettingKey = storageDataPrefix.searchSetting
 const searchHistoryListKey = storageDataPrefix.searchHistoryList
 const songListSettingKey = storageDataPrefix.songListSetting
-const leaderboardSettingKey = storageDataPrefix.leaderboardSetting
 const listPrevSelectIdKey = storageDataPrefix.listPrevSelectId
 const syncAuthKeyPrefix = storageDataPrefix.syncAuthKey
 const syncHostPrefix = storageDataPrefix.syncHost
@@ -39,7 +38,6 @@ let listUpdateInfo: LX.List.ListUpdateInfo
 
 let searchSetting: typeof DEFAULT_SETTING['search']
 let songListSetting: typeof DEFAULT_SETTING['songList']
-let leaderboardSetting: typeof DEFAULT_SETTING['leaderboard']
 let searchHistoryList: string[]
 
 const saveListPositionThrottle = throttle(() => {
@@ -53,9 +51,6 @@ const saveSearchHistoryThrottle = throttle(() => {
 }, 1000)
 const saveSongListSettingThrottle = throttle(() => {
   void saveData(songListSettingKey, songListSetting)
-}, 1000)
-const saveLeaderboardSettingThrottle = throttle(() => {
-  void saveData(leaderboardSettingKey, leaderboardSetting)
 }, 1000)
 const saveViewPrevStateThrottle = throttle((state) => {
   void saveData(viewPrevStateKey, state)
@@ -256,16 +251,6 @@ export const saveSongListSetting = async(setting: Partial<typeof DEFAULT_SETTING
   saveSongListSettingThrottle()
 }
 
-export const getLeaderboardSetting = async() => {
-  // eslint-disable-next-line require-atomic-updates
-  leaderboardSetting ??= await getData(leaderboardSettingKey) ?? { ...DEFAULT_SETTING.leaderboard }
-  return { ...leaderboardSetting }
-}
-export const saveLeaderboardSetting = async(setting: Partial<typeof DEFAULT_SETTING['leaderboard']>) => {
-  if (!leaderboardSetting) await getLeaderboardSetting()
-  leaderboardSetting = Object.assign(leaderboardSetting, setting)
-  saveLeaderboardSettingThrottle()
-}
 
 export const getViewPrevState = async() => {
   return (await getData<{ id: NAV_ID_Type }>(viewPrevStateKey)) ?? { ...DEFAULT_SETTING.viewPrevState }

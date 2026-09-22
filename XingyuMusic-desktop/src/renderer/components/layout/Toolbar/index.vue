@@ -1,7 +1,7 @@
 <template>
   <div :class="[$style.toolbar, { [$style.fullscreen]: isFullscreen }, appSetting['common.controlBtnPosition'] == 'left' ? $style.controlBtnLeft : $style.controlBtnRight]">
     <SearchInput />
-    <div v-if="appSetting['common.controlBtnPosition'] == 'left'" :class="$style.logo">L X</div>
+    <div v-if="appSetting['common.controlBtnPosition'] == 'left'" :class="$style.logo"><img src="@renderer/assets/images/xingyu-logo.png" class="logo-img" alt="" /></div>
     <ControlBtns v-else />
   </div>
 </template>
@@ -30,6 +30,13 @@ import SearchInput from './SearchInput.vue'
   &.fullscreen {
     -webkit-app-region: no-drag;
     .logo {
+      .logo-img {
+        display: block;
+        width: 22px;
+        height: 22px;
+        user-select: none;
+      }
+
       display: none;
     }
   }

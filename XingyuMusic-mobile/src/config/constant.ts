@@ -64,7 +64,6 @@ export const storageDataPrefix = {
   listUpdateInfo: '@list_update_info',
   ignoreVersion: '@ignore_version',
   ignoreVersionFailTipTimeKey: '@ignore_version_fail_tip_time',
-  leaderboardSetting: '@leaderboard_setting',
   songListSetting: '@songist_setting',
   searchSetting: '@search_setting',
 
@@ -101,7 +100,6 @@ export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
   { id: 'nav_songlist', icon: 'album' },
-  { id: 'nav_top', icon: 'leaderboard' },
   { id: 'nav_love', icon: 'love' },
   // { id: 'download', icon: 'download-2' },
   { id: 'nav_setting', icon: 'setting' },
@@ -129,11 +127,6 @@ export const MUSIC_TOGGLE_MODE_LIST = [
 ] as const
 
 export const DEFAULT_SETTING = {
-  leaderboard: {
-    source: 'kw' as LX.OnlineSource,
-    boardId: 'kw__16',
-  },
-
   songList: {
     source: 'kw' as LX.OnlineSource,
     sortId: 'new',

@@ -287,6 +287,7 @@ declare namespace LX {
         // 液态玻璃：边缘高光 / 玻璃底色（仅部分主题定义，消费侧需 fallback）
         '--color-glass-edge': string
         '--color-glass-tint': string
+        '--color-content-background': string
 
       }
     }

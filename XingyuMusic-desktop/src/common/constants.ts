@@ -40,7 +40,6 @@ export const DATA_KEYS = {
   listUpdateInfo: 'listUpdateInfo',
   ignoreVersion: 'ignoreVersion',
 
-  leaderboardSetting: 'leaderboardSetting',
   songListSetting: 'songListSetting',
   searchSetting: 'searchSetting',
 
@@ -48,10 +47,6 @@ export const DATA_KEYS = {
 } as const
 
 export const DEFAULT_SETTING = {
-  leaderboard: {
-    source: 'kw',
-    boardId: 'kw__16',
-  },
 
   songList: {
     source: 'kw',

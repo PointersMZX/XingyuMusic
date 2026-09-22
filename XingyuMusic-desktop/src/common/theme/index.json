@@ -254,7 +254,8 @@
         "--color-badge-secondary": "#4baed5",
         "--color-badge-tertiary": "#e7aa36",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -513,7 +514,8 @@
         "--color-badge-secondary": "#5cbf9b",
         "--color-badge-tertiary": "#5cbf9b",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -772,7 +774,8 @@
         "--color-badge-secondary": "rgba(66.6, 150.7, 171, 1)",
         "--color-badge-tertiary": "rgba(54, 196, 231, 1)",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -1031,7 +1034,8 @@
         "--color-badge-secondary": "#9ed458",
         "--color-badge-tertiary": "#9ed458",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -1290,7 +1294,8 @@
         "--color-badge-secondary": "#dfbb6b",
         "--color-badge-tertiary": "#dfbb6b",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -1549,7 +1554,8 @@
         "--color-badge-secondary": "#f5b684",
         "--color-badge-tertiary": "#f5b684",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -1808,7 +1814,8 @@
         "--color-badge-secondary": "#e5a39f",
         "--color-badge-tertiary": "#e5a39f",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -2067,7 +2074,8 @@
         "--color-badge-secondary": "#b19b9f",
         "--color-badge-tertiary": "#b19b9f",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -2326,7 +2334,8 @@
         "--color-badge-secondary": "#6376a2",
         "--color-badge-tertiary": "#6376a2",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -2585,7 +2594,8 @@
         "--color-badge-secondary": "#b080db",
         "--color-badge-tertiary": "#b080db",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -2844,7 +2854,8 @@
         "--color-badge-secondary": "var(--color-primary)",
         "--color-badge-tertiary": "var(--color-primary-dark-300)",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -3103,7 +3114,8 @@
         "--color-badge-secondary": "#af9479",
         "--color-badge-tertiary": "#af9479",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -3362,7 +3374,8 @@
         "--color-badge-secondary": "var(--color-primary-light-100)",
         "--color-badge-tertiary": "var(--color-primary-light-100)",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -3621,7 +3634,8 @@
         "--color-badge-secondary": "rgba(67, 139, 65, 1)",
         "--color-badge-tertiary": "rgba(132, 135, 65, 1)",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -3880,7 +3894,8 @@
         "--color-badge-secondary": "#dfbb6b",
         "--color-badge-tertiary": "var(--color-primary-light-100)",
         "--color-glass-edge": "transparent",
-        "--color-glass-tint": "transparent"
+        "--color-glass-tint": "transparent",
+        "--color-content-background": "var(--color-primary-light-1000)"
       }
     }
   },
@@ -4138,8 +4153,9 @@
         "--color-badge-primary": "var(--color-primary)",
         "--color-badge-secondary": "#D4B06F",
         "--color-badge-tertiary": "#F1DDA1",
-        "--color-glass-edge": "rgba(212, 176, 111, 0.5)",
-        "--color-glass-tint": "rgba(124, 32, 194, 0.18)"
+        "--color-glass-edge": "rgba(232, 208, 158, 0.75)",
+        "--color-glass-tint": "rgba(124, 32, 194, 0.38)",
+        "--color-content-background": "rgba(13, 7, 22, 0.86)"
       }
     }
   }

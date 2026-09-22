@@ -46,15 +46,7 @@ export default {
           name: 'SongList',
           enable: true,
         },
-        {
-          to: '/leaderboard',
-          tips: t('leaderboard'),
-          icon: '#icon-leaderboard',
-          iconSize: '0 0 425.22 425.2',
-          size,
-          name: 'Leaderboard',
-          enable: true,
-        },
+
         {
           to: '/list',
           tips: t('my_list'),

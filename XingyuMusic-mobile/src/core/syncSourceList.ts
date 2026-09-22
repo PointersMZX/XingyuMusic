@@ -2,18 +2,11 @@
 import { setListUpdateTime } from '@/utils/data'
 import { overwriteListMusics, setFetchingListStatus } from './list'
 import { getListDetailAll } from '@/core/songlist'
-import { getListDetailAll as getBoardListAll } from '@/core/leaderboard'
 
 const fetchList = async(id: string, source: LX.OnlineSource, sourceListId: string) => {
   setFetchingListStatus(id, true)
 
-  let promise
-  if (/^board__/.test(sourceListId)) {
-    const id = sourceListId.replace(/^board__/, '')
-    promise = id ? getBoardListAll(id, true) : Promise.reject(new Error('id not defined: ' + sourceListId))
-  } else {
-    promise = getListDetailAll(source, sourceListId, true)
-  }
+  let promise = getListDetailAll(source, sourceListId, true)
   return promise.finally(() => {
     setFetchingListStatus(id, false)
   })

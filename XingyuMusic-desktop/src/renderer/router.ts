@@ -31,14 +31,6 @@ const router = createRouter({
       },
     },
     {
-      path: '/leaderboard',
-      name: 'Leaderboard',
-      component: require('./views/Leaderboard/index.vue').default,
-      meta: {
-        name: 'Leaderboard',
-      },
-    },
-    {
       path: '/list',
       name: 'List',
       component: require('./views/List/index.vue').default,

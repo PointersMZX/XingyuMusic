@@ -1,7 +1,7 @@
 {
-  "name": "xingyu-music-mobile",
-  "version": "1.9.1",
-  "versionCode": 78,
+  "name": "XingyuMusic",
+  "version": "0.9.0-Beta.1",
+  "versionCode": 1,
   "private": true,
   "scripts": {
     "dev": "react-native run-android --active-arch-only",
@@ -35,7 +35,7 @@
     "react-native-app"
   ],
   "author": {
-    "name": "lyswhut",
+    "name": "PointersMZX",
     "email": "lyswhut@qq.com"
   },
   "license": "Apache-2.0",

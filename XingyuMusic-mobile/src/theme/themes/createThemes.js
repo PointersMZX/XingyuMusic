@@ -304,8 +304,8 @@ const defaultThemes = [
       font: 'rgb(240, 236, 255)',
       'c-app-background': 'rgba(18, 3, 31, 0.35)',
       'c-main-background': 'rgba(13, 7, 22, 0.88)',
-      'c-glass-edge': 'rgba(212, 176, 111, 0.5)',
-      'c-glass-tint': 'rgba(124, 32, 194, 0.22)',
+      'c-glass-edge': 'rgba(232, 208, 158, 0.75)',
+      'c-glass-tint': 'rgba(124, 32, 194, 0.36)',
 
       'c-badge-primary': 'var(c-primary)',
       'c-badge-secondary': '#D4B06F',

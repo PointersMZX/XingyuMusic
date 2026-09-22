@@ -392,8 +392,10 @@ const defaultThemes = [
       '--color-badge-tertiary': '#F1DDA1',
 
       // 玻璃边缘高光（金色发丝线），其他主题未定义此变量时走 CSS fallback
-      '--color-glass-edge': 'rgba(212, 176, 111, 0.5)',
-      '--color-glass-tint': 'rgba(124, 32, 194, 0.18)',
+      '--color-glass-edge': 'rgba(232, 208, 158, 0.75)',
+      '--color-glass-tint': 'rgba(124, 32, 194, 0.38)',
+// 舞台底：半透黑紫，让桌面壁纸隐约透出，玻璃才有折射景深
+'--color-content-background': 'rgba(13, 7, 22, 0.86)',
     },
   },
 ]
@@ -402,6 +404,8 @@ const defaultThemes = [
 defaultThemes.forEach(t => {
   t.config['--color-glass-edge'] ??= 'transparent'
   t.config['--color-glass-tint'] ??= 'transparent'
+  // 非紫金黑主题保持原 less 默认值语义，避免类型 union 断链
+  t.config['--color-content-background'] ??= 'var(--color-primary-light-1000)'
 })
 
 const themes = defaultThemes.map(({ config: { primary, font, ...extInfo }, ...themeInfo }) => {

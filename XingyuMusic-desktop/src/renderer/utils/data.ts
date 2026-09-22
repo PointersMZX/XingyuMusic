@@ -10,8 +10,6 @@ import {
   getSearchSetting as getSearchSettingFromData,
   saveSongListSetting as saveSongListSettingFromData,
   getSongListSetting as getSongListSettingFromData,
-  saveLeaderboardSetting as saveLeaderboardSettingFromData,
-  getLeaderboardSetting as getLeaderboardSettingFromData,
   saveViewPrevState as saveViewPrevStateFromData,
 } from '@renderer/utils/ipc'
 import { throttle } from '@common/utils'
@@ -25,7 +23,6 @@ let listUpdateInfo: LX.List.ListUpdateInfo
 
 let searchSetting: typeof DEFAULT_SETTING['search']
 let songListSetting: typeof DEFAULT_SETTING['songList']
-let leaderboardSetting: typeof DEFAULT_SETTING['leaderboard']
 
 const saveListPositionThrottle = throttle(() => {
   saveListPositionInfoFromData(listPosition)
@@ -35,9 +32,6 @@ const saveSearchSettingThrottle = throttle(() => {
 }, 1000)
 const saveSongListSettingThrottle = throttle(() => {
   saveSongListSettingFromData(songListSetting)
-}, 1000)
-const saveLeaderboardSettingThrottle = throttle(() => {
-  saveLeaderboardSettingFromData(leaderboardSetting)
 }, 1000)
 const saveViewPrevStateThrottle = throttle((state) => {
   saveViewPrevStateFromData(state)
@@ -170,17 +164,6 @@ export const setSongListSetting = async(setting: Partial<typeof DEFAULT_SETTING[
   if (!songListSetting) await getSongListSetting()
   songListSetting = Object.assign(songListSetting, setting)
   saveSongListSettingThrottle()
-}
-
-export const getLeaderboardSetting = async() => {
-  // eslint-disable-next-line require-atomic-updates
-  leaderboardSetting ??= await getLeaderboardSettingFromData()
-  return { ...leaderboardSetting }
-}
-export const setLeaderboardSetting = async(setting: Partial<typeof DEFAULT_SETTING['leaderboard']>) => {
-  if (!leaderboardSetting) await getLeaderboardSetting()
-  leaderboardSetting = Object.assign(leaderboardSetting, setting)
-  saveLeaderboardSettingThrottle()
 }
 
 export const saveViewPrevState = (state: typeof DEFAULT_SETTING['viewPrevState']) => {

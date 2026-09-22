@@ -113,7 +113,7 @@ const defaultSetting: LX.AppSetting = {
   'download.isSavePathGroupByListName': false,
   'download.savePath': path.join(os.homedir(), 'Desktop'),
   'download.fileName': '歌名 - 歌手',
-  'download.maxDownloadNum': 3,
+  'download.maxDownloadNum': 1,
   'download.skipExistFile': true,
   'download.isDownloadLrc': false,
   'download.isDownloadLxLrc': true,
@@ -121,7 +121,7 @@ const defaultSetting: LX.AppSetting = {
   'download.isDownloadRLrc': false,
   'download.lrcFormat': 'utf8',
   'download.isEmbedPic': true,
-  'download.isEmbedLyric': false,
+  'download.isEmbedLyric': true,
   'download.isEmbedLyricLx': true,
   'download.isEmbedLyricT': false,
   'download.isEmbedLyricR': false,
@@ -135,9 +135,9 @@ const defaultSetting: LX.AppSetting = {
   'network.proxy.host': '',
   'network.proxy.port': '',
 
-  'tray.enable': false,
+  'tray.enable': true,
   // 'tray.isToTray': false,
-  'tray.themeId': 0,
+  'tray.themeId': 1,
 
   'sync.mode': 'server',
   'sync.enable': false,
@@ -145,9 +145,6 @@ const defaultSetting: LX.AppSetting = {
   'sync.server.maxSsnapshotNum': 5,
   'sync.client.host': '',
 
-  'openAPI.enable': false,
-  'openAPI.port': '23330',
-  'openAPI.bindLan': false,
 
   // 'theme.id': 'blue_plus',
   'theme.id': 'xingyu',

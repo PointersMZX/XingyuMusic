@@ -177,9 +177,6 @@ export const sendPlayerStatus = (status: Partial<LX.Player.Status>) => {
 }
 
 
-export const sendOpenAPIAction = async(action: LX.OpenAPI.Actions) => {
-  return rendererInvoke<LX.OpenAPI.Actions, LX.OpenAPI.Status>(WIN_MAIN_RENDERER_EVENT_NAME.open_api_action, action)
-}
 
 export const saveLastStartInfo = (version: string) => {
   rendererSend(WIN_MAIN_RENDERER_EVENT_NAME.save_data, {
@@ -258,15 +255,6 @@ export const getIgnoreVersion = async() => {
   return rendererInvoke<string, string | null>(WIN_MAIN_RENDERER_EVENT_NAME.get_data, DATA_KEYS.ignoreVersion)
 }
 
-export const saveLeaderboardSetting = (source: typeof DEFAULT_SETTING['leaderboard']) => {
-  rendererSend(WIN_MAIN_RENDERER_EVENT_NAME.save_data, {
-    path: DATA_KEYS.leaderboardSetting,
-    data: source,
-  })
-}
-export const getLeaderboardSetting = async() => {
-  return (await rendererInvoke<string, typeof DEFAULT_SETTING['leaderboard']>(WIN_MAIN_RENDERER_EVENT_NAME.get_data, DATA_KEYS.leaderboardSetting)) ?? { ...DEFAULT_SETTING.leaderboard }
-}
 export const saveSongListSetting = (setting: typeof DEFAULT_SETTING['songList']) => {
   rendererSend(WIN_MAIN_RENDERER_EVENT_NAME.save_data, {
     path: DATA_KEYS.songListSetting,
