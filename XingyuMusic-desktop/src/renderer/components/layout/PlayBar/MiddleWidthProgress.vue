@@ -2,7 +2,7 @@
   <div :class="$style.player">
     <div :class="$style.picContent" :aria-label="$t('player__pic_tip')" @contextmenu="handleToMusicLocation" @click="showPlayerDetail">
       <img v-if="musicInfo.pic" :src="musicInfo.pic" decoding="async" @error="imgError">
-      <div v-else :class="$style.emptyPic"><img class="empty-logo" src="@renderer/assets/images/xingyu-logo.png" alt="" /></div>
+      <div v-else :class="$style.emptyPic"><img :class="$style.emptyLogo" src="@renderer/assets/images/xingyu-logo.png" alt="" /></div>
     </div>
     <div :class="$style.infoContent">
       <div :class="$style.title" :aria-label="title + $t('copy_tip')" @click="handleCopy(title)">

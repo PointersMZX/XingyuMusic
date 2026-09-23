@@ -1,7 +1,7 @@
 <template>
   <div :class="[$style.toolbar, { [$style.fullscreen]: isFullscreen }, appSetting['common.controlBtnPosition'] == 'left' ? $style.controlBtnLeft : $style.controlBtnRight]">
     <SearchInput />
-    <div v-if="appSetting['common.controlBtnPosition'] == 'left'" :class="$style.logo"><img src="@renderer/assets/images/xingyu-logo.png" class="logo-img" alt="" /></div>
+    <div v-if="appSetting['common.controlBtnPosition'] == 'left'" :class="$style.logo"><img src="@renderer/assets/images/xingyu-logo.png" :class="$style.logoImg" alt="" /></div>
     <ControlBtns v-else />
   </div>
 </template>
