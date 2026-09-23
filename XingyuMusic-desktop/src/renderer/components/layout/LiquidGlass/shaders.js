@@ -40,6 +40,7 @@ uniform vec4 u_glowColor;   // 指针高光色
 uniform vec2 u_pointer;     // 面板局部坐标（CSS px）
 uniform float u_pointerA;   // 指针在场强度 0..1
 uniform float u_sheen;      // 顶部镜面光强度
+uniform float u_glow;       // 指针高光强度
 uniform float u_time;
 
 // SDF：圆角矩形（Metric s2 同款）
@@ -151,11 +152,11 @@ void main() {
 
   // ---------- 指针高光（Metric s1） ----------
   float gd = distance(css, u_pointer);
-  float glow = (1.0 - smoothstep(45.0, 110.0, gd)) * u_pointerA;
-  rgb += u_glowColor.rgb * glow * u_glowColor.a;
+  float glow = (1.0 - smoothstep(45.0, 130.0, gd)) * u_pointerA * u_glow;
+  rgb += u_glowColor.rgb * glow;
 
   // ---------- 合成 ----------
-  float alpha = coverage * clamp(u_base.a + u_tint.a * 0.55 + rim * 0.5 + sheen * 0.4 + glow * 0.5, 0.0, 0.98);
+  float alpha = coverage * clamp(u_base.a + u_tint.a * 0.85 + rim * 0.7 + sheen * 0.55 + glow * 0.6, 0.0, 0.99);
   gl_FragColor = vec4(rgb, alpha);
 }
 `

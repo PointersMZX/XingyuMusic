@@ -82,7 +82,7 @@ const verifyQueryParams = async function(this: any, to: { query: Query, path: st
       _picUrl = listDetailInfo.info.img
     } else {
       setVisibleListDetail(false)
-      next({ path: '/songList/list', query: {} })
+      next({ path: '/search', query: {} })
       return
     }
 
@@ -130,7 +130,7 @@ export default {
     useKeyBack(handleBack)
 
     watch([source, id, page, refresh], async([_source, _id, _page, _refresh]) => {
-      if (!_source || !_id) return router.replace({ path: '/songList/list' })
+      if (!_source || !_id) return router.replace({ path: '/search' })
       // console.log(_source, _id, _page, _refresh, picUrl.value)
       // source.value = _source
       // id.value = _id

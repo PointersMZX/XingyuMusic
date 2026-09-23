@@ -37,15 +37,6 @@ export default {
           name: 'Search',
           enable: true,
         },
-        {
-          to: '/songList/list',
-          tips: t('song_list'),
-          icon: '#icon-album',
-          iconSize: '0 0 425.2 425.2',
-          size,
-          name: 'SongList',
-          enable: true,
-        },
 
         {
           to: '/list',

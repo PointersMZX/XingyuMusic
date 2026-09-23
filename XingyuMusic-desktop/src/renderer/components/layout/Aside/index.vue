@@ -34,13 +34,6 @@ import NavBar from './NavBar.vue'
   &.fullscreen {
     -webkit-app-region: no-drag;
     .logo {
-      .logo-img {
-        display: block;
-        width: 22px;
-        height: 22px;
-        user-select: none;
-      }
-
       display: none;
     }
   }
@@ -48,15 +41,20 @@ import NavBar from './NavBar.vue'
 
 .logo {
   box-sizing: border-box;
-  padding: 0 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: 50px;
   color: var(--color-nav-font);
   opacity: .8;
   flex: none;
-  text-align: center;
-  line-height: 50px;
-  font-weight: bold;
-  // -webkit-app-region: no-drag;
+
+  .logo-img {
+    display: block;
+    width: 32px;
+    height: 32px;
+    user-select: none;
+  }
 }
 
 </style>

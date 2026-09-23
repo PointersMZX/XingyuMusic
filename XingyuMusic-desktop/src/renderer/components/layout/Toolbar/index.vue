@@ -31,13 +31,6 @@ import SearchInput from './SearchInput.vue'
   &.fullscreen {
     -webkit-app-region: no-drag;
     .logo {
-      .logo-img {
-        display: block;
-        width: 22px;
-        height: 22px;
-        user-select: none;
-      }
-
       display: none;
     }
   }
@@ -54,14 +47,19 @@ import SearchInput from './SearchInput.vue'
 
 .logo {
   box-sizing: border-box;
-  padding: 0 @height-toolbar * .4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: @height-toolbar;
   color: var(--color-primary);
   flex: none;
-  text-align: center;
-  line-height: @height-toolbar;
-  font-weight: bold;
-  // -webkit-app-region: no-drag;
+
+  .logo-img {
+    display: block;
+    width: 30px;
+    height: 30px;
+    user-select: none;
+  }
 }
 
 </style>
