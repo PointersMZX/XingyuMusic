@@ -1,372 +1,16 @@
 //! 更新默认主题配置后，需要执行 npm run build:theme 重新构建index.json
+//! XingyuMusic 主题系统：共 4 个主题
+//! 1. xingyu  紫金黑（品牌默认，紫＝logo 主色＋金＋黑，带液态玻璃，默认开）
+//! 2. white   纯白（不做液态玻璃）
+//! 3. black   纯黑（不做液态玻璃）
+//! 4. 自定义  用户通过「添加主题」创建（RGB 取色器任选色），可在编辑器中开关「启用液态玻璃」
+//!    （--liquid-glass 键；桌面端由 LiquidGlass WebGL 组件消费，移动端由 c-glass-* 变量消费）
 
 const fs = require('fs')
 const path = require('path')
 const { createThemeColors } = require('./utils')
 
 const defaultThemes = [
-  {
-    id: 'green',
-    name: '绿意盎然',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(77, 175, 124)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#4baed5',
-      '--color-badge-tertiary': '#e7aa36',
-    },
-  },
-  {
-    id: 'blue',
-    name: '蓝田生玉',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(52, 152, 219)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#5cbf9b',
-      '--color-badge-tertiary': '#5cbf9b',
-    },
-  },
-  {
-    id: 'blue_plus',
-    name: '蛋雅深蓝',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(77, 131, 175)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-600)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': 'rgba(66.6, 150.7, 171, 1)',
-      '--color-badge-tertiary': 'rgba(54, 196, 231, 1)',
-    },
-  },
-  {
-    id: 'orange',
-    name: '橙黄橘绿',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(245, 171, 53)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#9ed458',
-      '--color-badge-tertiary': '#9ed458',
-    },
-  },
-  {
-    id: 'red',
-    name: '热情似火',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(214, 69, 65)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#dfbb6b',
-      '--color-badge-tertiary': '#dfbb6b',
-    },
-  },
-  {
-    id: 'pink',
-    name: '粉装玉琢',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(241, 130, 141)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#f5b684',
-      '--color-badge-tertiary': '#f5b684',
-    },
-  },
-  {
-    id: 'purple',
-    name: '重斤球紫',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(155, 89, 182)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#e5a39f',
-      '--color-badge-tertiary': '#e5a39f',
-    },
-  },
-  {
-    id: 'grey',
-    name: '灰常美丽',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(108, 122, 137)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#b19b9f',
-      '--color-badge-tertiary': '#b19b9f',
-    },
-  },
-  {
-    id: 'ming',
-    name: '青出于黑',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(51, 110, 123)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#6376a2',
-      '--color-badge-tertiary': '#6376a2',
-    },
-  },
-  {
-    id: 'blue2',
-    name: '清热板蓝',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(79, 98, 208)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'var(--color-primary-light-600-alpha-700)',
-      '--color-main-background': 'rgba(255, 255, 255, 1)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'none',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#b080db',
-      '--color-badge-tertiary': '#b080db',
-    },
-  },
-  {
-    id: 'black',
-    name: '黑灯瞎火',
-    isDark: true,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(150, 150, 150)',
-      font: 'rgb(229, 229, 229)',
-      '--color-app-background': 'rgba(0, 0, 0, 0)',
-      '--color-main-background': 'rgba(19, 19, 19, 0.9)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'url(./theme_images/landingMoon.png)',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary-dark-200)',
-      '--color-badge-secondary': 'var(--color-primary)',
-      '--color-badge-tertiary': 'var(--color-primary-dark-300)',
-    },
-  },
-  {
-    id: 'mid_autumn',
-    name: '月里嫦娥',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(74, 55, 82)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'rgba(255, 255, 255, 0)',
-      '--color-main-background': 'rgba(255, 255, 255, 0.9)',
-      '--color-nav-font': 'var(--color-primary-light-600)',
-      '--background-image': 'url(./theme_images/jqbg.jpg)',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': '#af9479',
-      '--color-badge-tertiary': '#af9479',
-    },
-  },
-  {
-    id: 'naruto',
-    name: '木叶之村',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(87, 144, 167)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'rgba(255, 255, 255, 0.15)',
-      '--color-main-background': 'rgba(255, 255, 255, 0.8)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'url(./theme_images/myzcbg.jpg)',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': 'var(--color-primary)',
-      '--color-badge-secondary': 'var(--color-primary-light-100)',
-      '--color-badge-tertiary': 'var(--color-primary-light-100)',
-    },
-  },
-  {
-    id: 'china_ink',
-    name: '近墨者黑',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgba(47, 47, 47, 1)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'rgba(255, 255, 255, 0)',
-      '--color-main-background': 'rgba(255, 255, 255, 0.8)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'url(./theme_images/china_ink.jpg)',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-
-      '--color-btn-hide': 'rgba(183, 212, 208, 1)',
-      '--color-btn-min': 'rgba(200, 214, 183, 1)',
-      '--color-btn-close': 'rgba(218, 195, 188, 1)',
-
-      '--color-badge-primary': 'rgba(137, 70, 70, 1)',
-      '--color-badge-secondary': 'rgba(67, 139, 65, 1)',
-      '--color-badge-tertiary': 'rgba(132, 135, 65, 1)',
-    },
-  },
-  {
-    id: 'happy_new_year',
-    name: '新年快乐',
-    isDark: false,
-    isDarkFont: false,
-    config: {
-      primary: 'rgb(192, 57, 43)',
-      font: 'rgb(33, 33, 33)',
-      '--color-app-background': 'rgba(255, 255, 255, 0.15)',
-      '--color-main-background': 'rgba(255, 255, 255, 0.8)',
-      '--color-nav-font': 'var(--color-primary)',
-      '--background-image': 'url(./theme_images/xnkl.png)',
-      '--background-image-position': 'center',
-      '--background-image-size': 'cover',
-
-      '--color-btn-hide': '#3bc2b2',
-      '--color-btn-min': '#85c43b',
-      '--color-btn-close': '#fab4a0',
-
-      '--color-badge-primary': '#7fb575',
-      '--color-badge-secondary': '#dfbb6b',
-      '--color-badge-tertiary': 'var(--color-primary-light-100)',
-    },
-  },
   {
     id: 'xingyu',
     name: '紫金黑',
@@ -393,22 +37,88 @@ const defaultThemes = [
 
       // 玻璃边缘高光（金色发丝线），其他主题未定义此变量时走 CSS fallback
       '--color-glass-edge': 'rgba(232, 208, 158, 0.75)',
-// 玻璃底板：紫金黑=半透，磨砂折射才看得见；其他主题=不透明（原样）
-'--color-glass-base': 'rgba(13, 7, 22, 0.42)',
+      // 玻璃底板：紫金黑=半透，磨砂折射才看得见；其他主题=不透明（原样）
+      '--color-glass-base': 'rgba(13, 7, 22, 0.42)',
       '--color-glass-tint': 'rgba(124, 32, 194, 0.38)',
-// 舞台底：半透黑紫，让桌面壁纸隐约透出，玻璃才有折射景深
-'--color-content-background': 'rgba(13, 7, 22, 0.86)',
+      // 舞台底：半透黑紫，让桌面壁纸隐约透出，玻璃才有折射景深
+      '--color-content-background': 'rgba(13, 7, 22, 0.86)',
+      // 液态玻璃（WebGL SDF 折射 + 7 色色散 + 边缘流光 + 指针高光）：招牌效果，默认开
+      '--liquid-glass': 'true',
+    },
+  },
+  {
+    id: 'white',
+    name: '纯白',
+    isDark: false,
+    isDarkFont: false,
+    config: {
+      primary: 'rgb(124, 32, 194)',
+      font: 'rgb(33, 33, 33)',
+      '--color-app-background': 'rgba(243, 243, 247, 0.9)',
+      '--color-main-background': 'rgb(255, 255, 255)',
+      '--color-nav-font': 'var(--color-primary)',
+      '--background-image': 'none',
+      '--background-image-position': 'center',
+      '--background-image-size': 'cover',
+
+      '--color-btn-hide': '#3bc2b2',
+      '--color-btn-min': '#85c43b',
+      '--color-btn-close': '#fab4a0',
+
+      '--color-badge-primary': 'var(--color-primary)',
+      '--color-badge-secondary': '#4baed5',
+      '--color-badge-tertiary': '#e7aa36',
+
+      // 纯白主题：不做液态玻璃
+      '--color-glass-edge': 'transparent',
+      '--color-glass-tint': 'transparent',
+      '--color-content-background': '#f5f5f7',
+      '--color-glass-base': 'rgb(255, 255, 255)',
+      '--liquid-glass': 'false',
+    },
+  },
+  {
+    id: 'black',
+    name: '纯黑',
+    isDark: true,
+    isDarkFont: false,
+    config: {
+      primary: 'rgb(150, 90, 220)',
+      font: 'rgb(235, 235, 240)',
+      '--color-app-background': 'rgba(0, 0, 0, 0.9)',
+      '--color-main-background': 'rgb(12, 12, 16)',
+      '--color-nav-font': 'var(--color-primary)',
+      '--background-image': 'none',
+      '--background-image-position': 'center',
+      '--background-image-size': 'cover',
+
+      '--color-btn-hide': '#3bc2b2',
+      '--color-btn-min': '#85c43b',
+      '--color-btn-close': '#fab4a0',
+
+      '--color-badge-primary': 'var(--color-primary)',
+      '--color-badge-secondary': '#4baed5',
+      '--color-badge-tertiary': '#e7aa36',
+
+      // 纯黑主题：不做液态玻璃
+      '--color-glass-edge': 'transparent',
+      '--color-glass-tint': 'transparent',
+      '--color-content-background': '#0a0a0d',
+      '--color-glass-base': 'rgb(12, 12, 16)',
+      '--liquid-glass': 'false',
     },
   },
 ]
 
-// 液态玻璃变量：未定义玻璃的主题给透明占位，保证所有主题类型与运行时键一致
+// 未显式定义键的占位，保证所有主题类型与运行时键一致
 defaultThemes.forEach(t => {
   t.config['--color-glass-edge'] ??= 'transparent'
   t.config['--color-glass-tint'] ??= 'transparent'
   // 非紫金黑主题保持原 less 默认值语义，避免类型 union 断链
   t.config['--color-content-background'] ??= 'var(--color-primary-light-1000)'
   t.config['--color-glass-base'] ??= 'var(--color-main-background)'
+  // 液态玻璃默认关（仅 xingyu 显式开启；自定义主题可在编辑器里开）
+  t.config['--liquid-glass'] ??= 'false'
 })
 
 const themes = defaultThemes.map(({ config: { primary, font, ...extInfo }, ...themeInfo }) => {
@@ -423,4 +133,3 @@ const themes = defaultThemes.map(({ config: { primary, font, ...extInfo }, ...th
 })
 
 fs.writeFileSync(path.join(__dirname, 'index.json'), JSON.stringify(themes, null, 2))
-

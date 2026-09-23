@@ -108,6 +108,7 @@
             <div :class="$style.subContent" style="flex-wrap: wrap;">
               <base-checkbox id="theme_edit_modal__dark_font" v-model="isDarkFont" :class="$style.checkbox" :label="$t('theme_edit_modal__dark_font')" @change="handleDarkFont" />
               <base-checkbox id="theme_edit_modal__preview" v-model="preview" :class="$style.checkbox" :label="$t('theme_edit_modal__preview')" @change="handlePreview" />
+              <base-checkbox id="theme_edit_modal__liquid_glass" v-model="liquidGlass" :class="$style.checkbox" :label="$t('theme_edit_modal__liquid_glass')" @change="handleLiquidGlass" />
             </div>
           </div>
         </div>
@@ -165,6 +166,7 @@ export default {
     const isDark = ref(false)
     const isDarkFont = ref(false)
     const preview = ref(false)
+    const liquidGlass = ref(true)
     const bgImg = ref('')
     let bgImgRaw = ''
     let originBgName = ''
@@ -251,6 +253,7 @@ export default {
       themeName.value = theme.name
       isDark.value = theme.isDark
       isDarkFont.value = theme.isDarkFont ?? false
+      liquidGlass.value = theme.config.extInfo['--liquid-glass'] !== 'false'
       currentBgPath = ''
       if (theme.config.extInfo['--background-image'] == 'none') {
         bgImg.value = ''
@@ -412,6 +415,11 @@ export default {
       theme.isDarkFont = val
       applyPrimaryColor(theme.config.themeColors['--color-primary'], theme.config.themeColors['--color-1000'], theme.isDark, theme.isDarkFont)
     }
+    // 液态玻璃开关（桌面端由 LiquidGlass WebGL 组件消费 --liquid-glass 变量）
+    const handleLiquidGlass = (val) => {
+      theme.config.extInfo['--liquid-glass'] = val ? 'true' : 'false'
+      createPreview()
+    }
     /**
      * 预览主题
      * @param {*} val 是否预览当前编辑的主题
@@ -461,7 +469,7 @@ export default {
       let isRequireUpdateSetting = false
       const newSetting = {}
       if (appSetting['theme.id'] == props.themeId) {
-        newSetting['theme.id'] = 'green'
+        newSetting['theme.id'] = 'white'
         isRequireUpdateSetting = true
       }
       if (theme.isDark) {
@@ -471,7 +479,7 @@ export default {
         }
       } else {
         if (appSetting['theme.lightId'] == props.themeId) {
-          newSetting['theme.lightId'] = 'green'
+          newSetting['theme.lightId'] = 'white'
           isRequireUpdateSetting = true
         }
       }
@@ -518,6 +526,8 @@ export default {
       handleDarkFont,
       preview,
       handlePreview,
+      liquidGlass,
+      handleLiquidGlass,
       handleCancel,
       handleSubmit,
       handleRemove,

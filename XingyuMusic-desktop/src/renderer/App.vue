@@ -5,6 +5,8 @@
       <layout-toolbar id="toolbar" />
       <layout-view id="view" />
       <layout-play-bar id="player" />
+      <layout-liquid-glass target="#toolbar" variant="toolbar" />
+      <layout-liquid-glass target="#player" variant="player" />
     </div>
     <layout-icons />
     <layout-change-log-modal />

@@ -146,9 +146,9 @@ const defaultSetting: LX.AppSetting = {
   'sync.client.host': '',
 
 
-  // 'theme.id': 'blue_plus',
+  // 主题系统共 4 个：xingyu（紫金黑，默认，带液态玻璃）/ white（纯白）/ black（纯黑）/ 自定义（编辑器创建，可开关液态玻璃）
   'theme.id': 'xingyu',
-  'theme.lightId': 'xingyu',
+  'theme.lightId': 'white',
   'theme.darkId': 'xingyu',
 
   'odc.isAutoClearSearchInput': false,

@@ -1,20 +1,22 @@
 import { compareVer } from './index'
 
+// 旧版数字主题 id 迁移：旧主题（绿/蓝/橙等 15 个）已随品牌重做移除，
+// 统一落到有效的默认主题 xingyu（紫金黑），black 落到纯黑
 const oldThemeMap = {
-  0: 'green',
-  1: 'blue',
-  2: 'yellow',
-  3: 'orange',
-  4: 'red',
-  10: 'pink',
-  5: 'purple',
-  6: 'grey',
-  11: 'ming',
-  12: 'blue2',
+  0: 'xingyu',
+  1: 'xingyu',
+  2: 'xingyu',
+  3: 'xingyu',
+  4: 'xingyu',
+  10: 'xingyu',
+  5: 'xingyu',
+  6: 'xingyu',
+  11: 'xingyu',
+  12: 'xingyu',
   13: 'black',
-  7: 'mid_autumn',
-  8: 'naruto',
-  9: 'happy_new_year',
+  7: 'xingyu',
+  8: 'xingyu',
+  9: 'xingyu',
 } as const
 
 export default (setting: any): Partial<LX.AppSetting> => {

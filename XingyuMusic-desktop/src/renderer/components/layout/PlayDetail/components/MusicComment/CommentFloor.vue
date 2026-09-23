@@ -23,7 +23,7 @@ div(:class="$style.container")
 </template>
 
 <script>
-import commentDefImg from '@renderer/assets/images/defaultUser.jpg'
+import commentDefImg from '@renderer/assets/images/defaultUser.png'
 
 export default {
   name: 'CommentFloor',

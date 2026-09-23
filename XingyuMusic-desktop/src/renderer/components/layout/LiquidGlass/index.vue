@@ -7,29 +7,24 @@ import { ref, onMounted, onBeforeUnmount } from '@common/utils/vueTools'
 import { vertexSrc, fragmentSrc } from './shaders.js'
 
 // variant = 'player'（底栏，招牌效果）| 'toolbar'（顶栏，轻一点）
-// 参数偏强：让折射位移 / 7 色色散 / 边缘流光在默认紫金黑背景下清晰可见（"液态"感）
 const VARIANT_PARAMS = {
   player: {
     radius: 14,
-    refractionHeight: 40,
-    refractionAmount: 10,
-    depthEffect: 0.3,
-    chromatic: 2.2,
-    edgeFalloff: 2.4,
-    sheen: 0.85,
-    glow: 1.4,
-    blur: 2.5,
+    refractionHeight: 30,
+    refractionAmount: 7,
+    depthEffect: 0.2,
+    chromatic: 2.6,
+    edgeFalloff: 3.5,
+    sheen: 0.5,
   },
   toolbar: {
     radius: 10,
-    refractionHeight: 26,
-    refractionAmount: 6,
-    depthEffect: 0.22,
-    chromatic: 1.6,
-    edgeFalloff: 2.8,
-    sheen: 0.7,
-    glow: 1.1,
-    blur: 2,
+    refractionHeight: 18,
+    refractionAmount: 4,
+    depthEffect: 0.15,
+    chromatic: 1.8,
+    edgeFalloff: 4,
+    sheen: 0.35,
   },
 }
 
@@ -220,7 +215,6 @@ const paintLinear = (ctx, layer, W, H) => {
 // 栅格化「玻璃背后」的完整背景堆叠（#root 内容背景+背景图 → #container app 背景 → #right main 背景）
 // 返回是否发生变化
 let bgCanvas = null
-let blurCanvas = null
 let bgSig = ''
 const bgColorOf = (id) => {
   const el = document.getElementById(id)
@@ -265,15 +259,6 @@ const rasterizeBackground = () => {
     ctx.fillStyle = mainBg
     ctx.fillRect(0, 0, W, H)
   }
-  // 磨砂（frosted）副本：折射源加轻微高斯模糊，玻璃才有"磨砂折射"的实体感
-  if (!blurCanvas) blurCanvas = document.createElement('canvas')
-  blurCanvas.width = W
-  blurCanvas.height = H
-  const bctx = blurCanvas.getContext('2d')
-  bctx.clearRect(0, 0, W, H)
-  bctx.filter = `blur(${param.blur ?? 2}px)`
-  bctx.drawImage(bgCanvas, 0, 0)
-  bctx.filter = 'none'
   return true
 }
 
@@ -321,7 +306,7 @@ const initGL = () => {
     'u_content', 'u_panelSize', 'u_panelPos', 'u_windowSize',
     'u_radius', 'u_refractionHeight', 'u_refractionAmount', 'u_depthEffect', 'u_chromatic',
     'u_edgeFalloff', 'u_edgeColor', 'u_tint', 'u_base', 'u_glowColor',
-    'u_pointer', 'u_pointerA', 'u_sheen', 'u_glow', 'u_time',
+    'u_pointer', 'u_pointerA', 'u_sheen', 'u_time',
   ]) {
     uniforms[name] = gl.getUniformLocation(prog, name)
   }
@@ -339,11 +324,9 @@ const initGL = () => {
 }
 
 const uploadContentTex = (changed) => {
-  // 折射源用磨砂副本（blurCanvas），无则退回清晰底
-  const src = blurCanvas || bgCanvas
-  if (!gl || !src || !changed) return
+  if (!gl || !bgCanvas || !changed) return
   gl.bindTexture(gl.TEXTURE_2D, contentTex)
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src)
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bgCanvas)
 }
 
 // ---------- 指针 ----------
@@ -458,7 +441,6 @@ const draw = () => {
   gl.uniform2f(uniforms.u_pointer, smPointerX, smPointerY)
   gl.uniform1f(uniforms.u_pointerA, smPointerA)
   gl.uniform1f(uniforms.u_sheen, pv.sheen)
-  gl.uniform1f(uniforms.u_glow, pv.glow ?? 1.2)
   gl.uniform1f(uniforms.u_time, t)
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
 }

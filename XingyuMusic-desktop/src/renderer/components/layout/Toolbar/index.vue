@@ -20,6 +20,7 @@ import SearchInput from './SearchInput.vue'
 
 .toolbar {
   display: flex;
+  position: relative;
   height: @height-toolbar;
   align-items: center;
   justify-content: space-between;

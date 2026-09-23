@@ -2,7 +2,7 @@
   <div :class="$style.player">
     <div :class="$style.picContent" :aria-label="$t('player__pic_tip')" @contextmenu="handleToMusicLocation" @click="showPlayerDetail">
       <img v-if="musicInfo.pic" :src="musicInfo.pic" decoding="async" @error="imgError">
-      <div v-else :class="$style.emptyPic">L<span>X</span></div>
+      <div v-else :class="$style.emptyPic"><img class="empty-logo" src="@renderer/assets/images/xingyu-logo.png" alt="" /></div>
     </div>
     <div :class="$style.infoContent">
       <div :class="$style.title" :aria-label="title + $t('copy_tip')" @click="handleCopy(title)">
@@ -218,13 +218,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-primary-light-400-alpha-200);
     user-select: none;
-    font-size: 20px;
-    font-family: Consolas, "Courier New", monospace;
 
-    span {
-      padding-left: 3px;
+    .empty-logo {
+      width: 55%;
+      height: 55%;
+      display: block;
     }
   }
 }

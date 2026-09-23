@@ -43,3 +43,24 @@
     var(--color-main-background, rgba(0, 0, 0, 0.5));
   border-right: 1px solid var(--color-glass-edge, transparent);
 }
+
+/* ===== WebGL 液态玻璃激活态 =====
+   LiquidGlass 组件（canvas 叠层）启用时，documentElement 加 .liquid-glass-on，
+   此时把顶栏/底栏的 CSS 磨砂玻璃底板撤掉——玻璃体改由 GPU 着色器绘制
+   （SDF 折射 + 7 色色散 + 边缘流光 + 指针高光），只保留外圈紫晕阴影与圆角。 */
+.liquid-glass-on {
+  #toolbar {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: transparent;
+    border-bottom: none;
+  }
+
+  #player {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: transparent;
+    border: none;
+  }
+}
+

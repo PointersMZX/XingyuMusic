@@ -72,9 +72,9 @@ const defaultSetting: LX.AppSetting = {
 
   'sync.enable': false,
 
-  // 'theme.id': 'blue_plus',
+  // 主题系统共 4 个：xingyu（紫金黑，默认，带液态玻璃）/ white（纯白）/ black（纯黑）/ 自定义
   'theme.id': 'xingyu',
-  'theme.lightId': 'xingyu',
+  'theme.lightId': 'white',
   'theme.darkId': 'xingyu',
   'theme.hideBgDark': false,
   'theme.dynamicBg': false,

@@ -117,6 +117,10 @@ export const applyElectronEnvParams = () => {
 
   app.commandLine.appendSwitch('--disable-gpu-sandbox')
 
+  // 允许 SwiftShader 软渲染兜底：液态玻璃 WebGL 层在无硬件 GPU / GPU 被禁用时
+  // 仍可（以 CPU 软渲染）工作；有硬件 GPU 的机器走 ANGLE/D3D，此开关不影响性能
+  app.commandLine.appendSwitch('enable-unsafe-swiftshader')
+
   // proxy
   if (global.envParams.cmdParams['proxy-server']) {
     app.commandLine.appendSwitch('proxy-server', global.envParams.cmdParams['proxy-server'])

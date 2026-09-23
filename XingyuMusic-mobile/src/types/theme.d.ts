@@ -301,9 +301,10 @@ declare global {
           'c-badge-secondary': string
           'c-badge-tertiary': string
 
-          // 液态玻璃：边缘高光 / 玻璃底色（仅部分主题定义，组件内需 fallback）
+          // 液态玻璃：边缘高光 / 玻璃底色 / 总开关（仅部分主题定义，组件内需 fallback）
           'c-glass-edge'?: string
           'c-glass-tint'?: string
+          'c-liquid-glass'?: string
         }
       }
     }

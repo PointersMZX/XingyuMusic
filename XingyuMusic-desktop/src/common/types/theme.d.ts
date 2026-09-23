@@ -290,6 +290,9 @@ declare namespace LX {
         '--color-content-background': string
         '--color-glass-base': string
 
+        // 液态玻璃总开关（'true'/'false'，自定义主题可在编辑器中切换）
+        '--liquid-glass': string
+
       }
     }
   }
