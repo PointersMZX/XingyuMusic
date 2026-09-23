@@ -1,7 +1,7 @@
 <template>
   <div :class="[$style.aside, { [$style.fullscreen]: isFullscreen }]">
     <ControlBtns v-if="appSetting['common.controlBtnPosition'] == 'left'" />
-    <div v-else :class="$style.logo">L X</div>
+    <div v-else :class="$style.logo"><img src="@renderer/assets/images/xingyu-logo.png" class="logo-img" alt="" /></div>
     <NavBar />
   </div>
 </template>
@@ -34,6 +34,13 @@ import NavBar from './NavBar.vue'
   &.fullscreen {
     -webkit-app-region: no-drag;
     .logo {
+      .logo-img {
+        display: block;
+        width: 22px;
+        height: 22px;
+        user-select: none;
+      }
+
       display: none;
     }
   }

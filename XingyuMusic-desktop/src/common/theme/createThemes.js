@@ -393,6 +393,8 @@ const defaultThemes = [
 
       // 玻璃边缘高光（金色发丝线），其他主题未定义此变量时走 CSS fallback
       '--color-glass-edge': 'rgba(232, 208, 158, 0.75)',
+// 玻璃底板：紫金黑=半透，磨砂折射才看得见；其他主题=不透明（原样）
+'--color-glass-base': 'rgba(13, 7, 22, 0.42)',
       '--color-glass-tint': 'rgba(124, 32, 194, 0.38)',
 // 舞台底：半透黑紫，让桌面壁纸隐约透出，玻璃才有折射景深
 '--color-content-background': 'rgba(13, 7, 22, 0.86)',
@@ -406,6 +408,7 @@ defaultThemes.forEach(t => {
   t.config['--color-glass-tint'] ??= 'transparent'
   // 非紫金黑主题保持原 less 默认值语义，避免类型 union 断链
   t.config['--color-content-background'] ??= 'var(--color-primary-light-1000)'
+  t.config['--color-glass-base'] ??= 'var(--color-main-background)'
 })
 
 const themes = defaultThemes.map(({ config: { primary, font, ...extInfo }, ...themeInfo }) => {

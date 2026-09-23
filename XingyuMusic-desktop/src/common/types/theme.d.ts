@@ -288,6 +288,7 @@ declare namespace LX {
         '--color-glass-edge': string
         '--color-glass-tint': string
         '--color-content-background': string
+        '--color-glass-base': string
 
       }
     }

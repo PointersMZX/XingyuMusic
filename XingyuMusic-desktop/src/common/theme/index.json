@@ -255,7 +255,8 @@
         "--color-badge-tertiary": "#e7aa36",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -515,7 +516,8 @@
         "--color-badge-tertiary": "#5cbf9b",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -775,7 +777,8 @@
         "--color-badge-tertiary": "rgba(54, 196, 231, 1)",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -1035,7 +1038,8 @@
         "--color-badge-tertiary": "#9ed458",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -1295,7 +1299,8 @@
         "--color-badge-tertiary": "#dfbb6b",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -1555,7 +1560,8 @@
         "--color-badge-tertiary": "#f5b684",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -1815,7 +1821,8 @@
         "--color-badge-tertiary": "#e5a39f",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -2075,7 +2082,8 @@
         "--color-badge-tertiary": "#b19b9f",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -2335,7 +2343,8 @@
         "--color-badge-tertiary": "#6376a2",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -2595,7 +2604,8 @@
         "--color-badge-tertiary": "#b080db",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -2855,7 +2865,8 @@
         "--color-badge-tertiary": "var(--color-primary-dark-300)",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -3115,7 +3126,8 @@
         "--color-badge-tertiary": "#af9479",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -3375,7 +3387,8 @@
         "--color-badge-tertiary": "var(--color-primary-light-100)",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -3635,7 +3648,8 @@
         "--color-badge-tertiary": "rgba(132, 135, 65, 1)",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -3895,7 +3909,8 @@
         "--color-badge-tertiary": "var(--color-primary-light-100)",
         "--color-glass-edge": "transparent",
         "--color-glass-tint": "transparent",
-        "--color-content-background": "var(--color-primary-light-1000)"
+        "--color-content-background": "var(--color-primary-light-1000)",
+        "--color-glass-base": "var(--color-main-background)"
       }
     }
   },
@@ -4154,6 +4169,7 @@
         "--color-badge-secondary": "#D4B06F",
         "--color-badge-tertiary": "#F1DDA1",
         "--color-glass-edge": "rgba(232, 208, 158, 0.75)",
+        "--color-glass-base": "rgba(13, 7, 22, 0.42)",
         "--color-glass-tint": "rgba(124, 32, 194, 0.38)",
         "--color-content-background": "rgba(13, 7, 22, 0.86)"
       }
