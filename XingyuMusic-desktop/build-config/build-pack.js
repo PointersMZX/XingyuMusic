@@ -38,7 +38,7 @@ const options = {
     'node_modules/utf-8-validate',
     'dist/**/*',
   ],
-  npmRebuild: false, // 临时
+  npmRebuild: false, // 本机无 VS 编译器：跳过 @electron/rebuild，better-sqlite3 由 beforePack copyLib 摆预编译产物，ws 无原生加速则自动纯 JS 回退
   asar: {
     smartUnpack: false,
   },
