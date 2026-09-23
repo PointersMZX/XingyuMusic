@@ -10,6 +10,7 @@ const afterPack = require('./build-after-pack')
 */
 const options = {
   appId: 'cn.toside.music.desktop',
+  copyright: 'Copyright © 2026 XingyuMusic All Rights Reserved',
   productName: 'XingyuMusic',
   beforePack,
   afterPack,
@@ -37,6 +38,7 @@ const options = {
     'node_modules/utf-8-validate',
     'dist/**/*',
   ],
+  npmRebuild: false, // 临时
   asar: {
     smartUnpack: false,
   },
@@ -58,7 +60,6 @@ const options = {
 const winOptions = {
   win: {
     icon: './resources/icons/icon.ico',
-    copyright: 'Copyright © 2026 XingyuMusic All Rights Reserved',
     // artifactName: '${productName}-v${version}-${env.ARCH}-${env.TARGET}.${ext}',
   },
   nsis: {

@@ -2,6 +2,7 @@
   "name": "xingyu-music-desktop",
   "version": "0.9.0-Beta.1",
   "description": "一个免费的音乐查找助手",
+  "copyright": "Copyright © 2026 XingyuMusic All Rights Reserved",
   "main": "./dist/main.js",
   "scripts": {
     "pack": "node build-config/pack.js && npm run pack:win:setup:x64",
