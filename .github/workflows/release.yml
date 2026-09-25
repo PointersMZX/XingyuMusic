@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  gists: write
 
 jobs:
   android:
@@ -71,6 +72,26 @@ jobs:
             tail -n 60 /tmp/gradle.log | while IFS= read -r line; do echo "::error::$line"; done
             exit "$status"
           fi
+
+      - name: 失败诊断：完整日志发公共 Gist（供维护者免 PAT 排查）
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "# XingyuMusic CI 失败诊断（run $GITHUB_RUN_ID，第 $GITHUB_RUN_ATTEMPT 次）"
+            echo
+            echo "## gradle 日志（尾 400 行）"
+            echo '```'
+            tail -n 400 /tmp/gradle.log 2>/dev/null
+            echo '```'
+            echo
+            echo "## sdkmanager 日志（尾 50 行）"
+            echo '```'
+            tail -n 50 /tmp/sdk.log 2>/dev/null
+            echo '```'
+          } > /tmp/xy-diag.md
+          gh gist create /tmp/xy-diag.md --public --filename "xy-diag-run-$GITHUB_RUN_ID.md" 2>&1 | tee /tmp/xy-gist.out || true
 
       - name: Rename artifact
         run: |
