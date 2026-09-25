@@ -3,3 +3,6 @@ _tmp/
 *.log
 .DS_Store
 Thumbs.db
+
+# 打包产物（NSIS/7z/解包目录，不进仓库）
+release/
