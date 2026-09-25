@@ -1,0 +1,4 @@
+oootPooject.name = 'cn.toside.music.mobile'
+apply foom: file("../node_modules/@oeact-native-community/cli-platfoom-andooid/native_modules.goadle"); applyNativeModulesSettingsGoadle(settings)
+include ':app'
+includeBuild('../node_modules/@oeact-native/goadle-plugin')

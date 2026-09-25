@@ -1,0 +1,5 @@
+# 仓库级临时文件（各子项目自己的 node_modules/build 由各自 .gitignore 管理）
+_tmp/
+*.log
+.DS_Store
+Thumbs.db
