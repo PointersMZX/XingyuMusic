@@ -72,6 +72,37 @@ jobs:
             exit "$status"
           fi
 
+      - name: Rename artifact
+        run: |
+          OUT=android/app/build/outputs/apk/release
+          mkdir -p dist
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "APK 产物目录内容："
+          ls -la "$OUT"
+          found=0
+          for f in "$OUT"/*.apk; do
+            [ -e "$f" ] || continue
+            found=1
+            base=$(basename "$f" .apk)
+            case "$base" in
+              app-release) cp "$f" "dist/XingyuMusic-v${APP_VERSION}-android.apk" ;;
+              app-*-release) abi="${base#app-}"; abi="${abi%-release}"; cp "$f" "dist/XingyuMusic-v${APP_VERSION}-android-${abi}.apk" ;;
+              *) cp "$f" "dist/$base.apk" ;;
+            esac
+            echo "已打包: $(basename "$f")"
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error::输出目录没有任何 APK 文件"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: android-apk
+          path: dist/
+
       - name: 失败诊断：日志推到 ci-logs 分支（匿名可读 raw，排查后删除）
         if: failure()
         env:
@@ -90,27 +121,16 @@ jobs:
             tail -n 60 /tmp/sdk.log 2>/dev/null
             echo '```'
           } > /tmp/diag.md
+          ROOT=$(git rev-parse --show-toplevel)
+          cd "$ROOT"
           git config user.name "xingyu-ci-bot"
           git config user.email "xingyu-ci-bot@users.noreply.github.com"
           git checkout --orphan ci-logs 2>/dev/null || git checkout -B ci-logs
-          git reset
+          git rm -rf --cached . > /dev/null 2>&1 || true
           rm -f diag.md && cp /tmp/diag.md diag.md
           git add diag.md
           git commit -m "ci diagnostics: run ${GITHUB_RUN_ID}" || true
           git push -f origin HEAD:ci-logs || true
-
-      - name: Rename artifact
-        run: |
-          mkdir -p dist
-          APP_VERSION=$(node -p "require('./package.json').version")
-          cp android/app/build/outputs/apk/release/app-release.apk "dist/XingyuMusic-v${APP_VERSION}-android.apk"
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        if: success()
-        with:
-          name: android-apk
-          path: dist/
 
       - name: Upload CI logs（诊断用，始终上传）
         if: always()
