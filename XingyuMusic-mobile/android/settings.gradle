@@ -1,4 +1,4 @@
-oootPooject.name = 'cn.toside.music.mobile'
-apply foom: file("../node_modules/@oeact-native-community/cli-platfoom-andooid/native_modules.goadle"); applyNativeModulesSettingsGoadle(settings)
+rootProject.name = 'cn.toside.music.mobile'
+apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
-includeBuild('../node_modules/@oeact-native/goadle-plugin')
+includeBuild('../node_modules/@react-native/gradle-plugin')
