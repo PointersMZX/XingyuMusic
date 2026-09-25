@@ -75,7 +75,8 @@ jobs:
       - name: Rename artifact
         run: |
           OUT=android/app/build/outputs/apk/release
-          mkdir -p dist
+          DST="$GITHUB_WORKSPACE/release-apk"
+          mkdir -p "$DST"
           APP_VERSION=$(node -p "require('./package.json').version")
           echo "APK 产物目录内容："
           ls -la "$OUT"
@@ -85,9 +86,9 @@ jobs:
             found=1
             base=$(basename "$f" .apk)
             case "$base" in
-              app-release) cp "$f" "dist/XingyuMusic-v${APP_VERSION}-android.apk" ;;
-              app-*-release) abi="${base#app-}"; abi="${abi%-release}"; cp "$f" "dist/XingyuMusic-v${APP_VERSION}-android-${abi}.apk" ;;
-              *) cp "$f" "dist/$base.apk" ;;
+              app-release) cp "$f" "$DST/XingyuMusic-v${APP_VERSION}-android.apk" ;;
+              app-*-release) abi="${base#app-}"; abi="${abi%-release}"; cp "$f" "$DST/XingyuMusic-v${APP_VERSION}-android-${abi}.apk" ;;
+              *) cp "$f" "$DST/$base.apk" ;;
             esac
             echo "已打包: $(basename "$f")"
           done
@@ -101,7 +102,24 @@ jobs:
         if: success()
         with:
           name: android-apk
-          path: dist/
+          path: release-apk/
+
+      - name: Create GitHub Release 并上传 APK（tag 推送时）
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: XingyuMusic ${{ github.ref_name }}
+          draft: false
+          make_latest: true
+          files: release-apk/*.apk
+          body: |
+            首个公开 Beta 版：双端液态玻璃 UI（GPU 着色器）+ 4 主题体系 + 品牌全换。
+
+            - Android：APK（universal + 分 ABI；beta 阶段使用调试签名，正式签名后续版本替换）
+            - Windows：安装版（NSIS）由维护者手动上传，请留意补充
+
+            桌面端旧版提示/更新检查数据源：仓库根 `publish/version.json`。
 
       - name: 失败诊断：日志推到 ci-logs 分支（匿名可读 raw，排查后删除）
         if: failure()
@@ -141,30 +159,3 @@ jobs:
             /tmp/sdk.log
             /tmp/gradle.log
 
-  release:
-    name: GitHub Release
-    runs-on: ubuntu-24.04
-    needs: [android]
-    if: github.event_name == 'push'
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: XingyuMusic ${{ github.ref_name }}
-          draft: false
-          make_latest: true
-          files: |
-            artifacts/android-apk/*
-          body: |
-            首个公开 Beta 版：双端液态玻璃 UI（GPU 着色器）+ 4 主题体系 + 品牌全换。
-
-            - Android：APK（beta 阶段使用调试签名，正式签名后续版本替换）
-            - Windows：安装版（NSIS）由维护者手动上传，请留意补充
-
-            桌面端旧版提示/更新检查数据源：仓库根 `publish/version.json`。
