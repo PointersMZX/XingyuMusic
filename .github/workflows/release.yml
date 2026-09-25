@@ -1,5 +1,5 @@
 # XingyuMusic 发布流水线
-# 触发：推送 v* tag → CI 打 Linux 桌面端 + Android APK，并创建 GitHub Release
+# 触发：推送 v* tag → CI 打 Android APK，并创建 GitHub Release
 # Windows 端（NSIS 安装版）由维护者自行上传到 Release 页面
 on:
   push:
@@ -11,46 +11,6 @@ permissions:
   contents: write
 
 jobs:
-  desktop-linux:
-    name: Desktop · Linux (x64/arm64)
-    runs-on: ubuntu-24.04
-    defaults:
-      run:
-        working-directory: XingyuMusic-desktop
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: XingyuMusic-desktop/package-lock.json
-
-      - name: Install dependencies（跳过本地重编，better-sqlite3 用仓库内预编译产物）
-        run: |
-          npm ci --ignore-scripts
-          node build-config/postinstall.js
-
-      - name: Build dist
-        run: npm run build
-
-      - name: Package Linux artifacts
-        run: |
-          node build-config/build-pack.js target=linux arch=x64 type=appImage
-          node build-config/build-pack.js target=linux arch=arm64 type=appImage
-          node build-config/build-pack.js target=linux arch=x64 type=deb
-          node build-config/build-pack.js target=linux arch=arm64 type=deb
-          node build-config/build-pack.js target=linux arch=x64 type=rpm
-          node build-config/build-pack.js target=linux arch=x64 type=pacman
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: desktop-linux
-          path: build/
-
   android:
     name: Android APK
     runs-on: ubuntu-24.04
@@ -73,17 +33,31 @@ jobs:
           java-version: '17'
           cache: gradle
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK components（compileSdk 36 / build-tools 35）
+        run: |
+          sdkmanager --install "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+          yes | sdkmanager --licenses > /dev/null || true
+
       - name: Install dependencies
         run: npm ci
 
       - name: Assemble release APK（暂用仓库内 debug.keystore 签名；配好密钥后可换正式 keystore）
         run: |
           cd android
-          ./gradlew assembleRelease \
+          ./gradlew --no-daemon --stacktrace assembleRelease \
             -PMYAPP_UPLOAD_STORE_FILE=debug.keystore \
             -PMYAPP_UPLOAD_KEY_ALIAS=androiddebugkey \
             -PMYAPP_UPLOAD_STORE_PASSWORD=android \
-            -PMYAPP_UPLOAD_KEY_PASSWORD=android
+            -PMYAPP_UPLOAD_KEY_PASSWORD=android 2>&1 | tee /tmp/gradle.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "::error::gradle assembleRelease 失败，尾 60 行日志："
+            tail -n 60 /tmp/gradle.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit "$status"
+          fi
 
       - name: Rename artifact
         run: |
@@ -100,7 +74,7 @@ jobs:
   release:
     name: GitHub Release
     runs-on: ubuntu-24.04
-    needs: [desktop-linux, android]
+    needs: [android]
     if: github.event_name == 'push'
     steps:
       - name: Download artifacts
@@ -116,13 +90,11 @@ jobs:
           draft: false
           make_latest: true
           files: |
-            artifacts/desktop-linux/*
             artifacts/android-apk/*
           body: |
             首个公开 Beta 版：双端液态玻璃 UI（GPU 着色器）+ 4 主题体系 + 品牌全换。
 
-            - 桌面 Linux：AppImage / deb / rpm / pacman（x64 + arm64）
             - Android：APK（beta 阶段使用调试签名，正式签名后续版本替换）
             - Windows：安装版（NSIS）由维护者手动上传，请留意补充
 
-            更新说明与检查机制基于仓库根目录 `publish/version.json`。
+            桌面端旧版提示/更新检查数据源：仓库根 `publish/version.json`。
