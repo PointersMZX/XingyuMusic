@@ -9,8 +9,6 @@
 | `XingyuMusic-desktop/` | Windows 端（Electron + Vue） |
 | `XingyuMusic-mobile/` | Android 端（React Native） |
 
-图标源文件在仓库外：`D:\Agent\icon\XingyuMusic-icons`（ico/png/bmp/1024 源图）。
-
 ## 开发
 
 ```bash
