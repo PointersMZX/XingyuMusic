@@ -1,0 +1,10 @@
+{
+  "version": "0.9.0-Beta.1",
+  "desc": "首个公开 Beta：双端液态玻璃 UI（GPU 着色器）+ 4 主题体系（紫金黑默认/自定义/纯白/纯黑）+ 品牌全换 + 安装包体积优化。",
+  "history": [
+    {
+      "version": "0.9.0-Beta.1",
+      "desc": "液态玻璃 UI（SDF 折射 + 色散 + 边缘流光，WebGL 叠层）；主题体系重做为 4 个（紫金黑 xingyu 默认开玻璃 / 自定义 RGB 可开关玻璃 / 纯白 / 纯黑）；删除歌单列表页；左上角 logo 定尺寸修复；打包优化（Chromium 语言包裁剪 + D3D12 着色器编译器移除）。Windows 提供普通版（Electron 42）与 Win7 版（Electron 22），Android 提供 APK。"
+    }
+  ]
+}
