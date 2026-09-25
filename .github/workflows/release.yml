@@ -60,7 +60,7 @@ jobs:
       - name: Assemble release APK（暂用仓库内 debug.keystore 签名；配好密钥后可换正式 keystore）
         run: |
           cd android
-          ./gradlew --no-daemon --stacktrace assembleRelease \
+          bash gradlew --no-daemon --stacktrace assembleRelease \
             -PMYAPP_UPLOAD_STORE_FILE=debug.keystore \
             -PMYAPP_UPLOAD_KEY_ALIAS=androiddebugkey \
             -PMYAPP_UPLOAD_STORE_PASSWORD=android \
