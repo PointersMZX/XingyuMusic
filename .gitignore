@@ -6,8 +6,3 @@ Thumbs.db
 
 # 打包产物（NSIS/7z/解包目录，不进仓库）
 release/
-
-# 本地只读参考目录（lx-music 双端参考源码 / Metric UI 参考 APK，不随公开仓库分发）
-lx-music-desktop/
-lx-music-mobile/
-UIexample/
