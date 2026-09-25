@@ -33,13 +33,26 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install required SDK components（compileSdk 36 / build-tools 35）
+      - name: Setup Android SDK（定位 sdkmanager + 接受 license + 装 compileSdk 36 / build-tools 35）
         run: |
-          sdkmanager --install "platforms;android-36" "build-tools;35.0.0" "platform-tools"
-          yes | sdkmanager --licenses > /dev/null || true
+          echo "ANDROID_HOME=${ANDROID_HOME:-<unset>} ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-<unset>}"
+          SDKMGR=""
+          for base in "${ANDROID_HOME}" "${ANDROID_SDK_ROOT}" "/usr/lib/android-sdk" "$HOME/Android/Sdk"; do
+            [ -n "$base" ] || continue
+            for p in "$base/cmdline-tools/latest/bin/sdkmanager" "$base/tools/bin/sdkmanager" "$base/bin/sdkmanager"; do
+              [ -x "$p" ] && { SDKMGR="$p"; break 2; }
+            done
+          done
+          [ -z "$SDKMGR" ] && SDKMGR="$(find / -name sdkmanager -type f 2>/dev/null | head -1)"
+          echo "sdkmanager -> $SDKMGR"
+          if [ -z "$SDKMGR" ]; then echo "::error::未找到 sdkmanager（Android SDK 缺失？）"; exit 1; fi
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" --install "platforms;android-36" "build-tools;35.0.0" "platform-tools" 2>&1 | tee /tmp/sdk.log
+          if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+            echo "::error::SDK 组件安装失败，尾部日志："
+            tail -n 40 /tmp/sdk.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -67,9 +80,19 @@ jobs:
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: android-apk
           path: dist/
+
+      - name: Upload CI logs（诊断用，始终上传）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ci-logs
+          path: |
+            /tmp/sdk.log
+            /tmp/gradle.log
 
   release:
     name: GitHub Release
