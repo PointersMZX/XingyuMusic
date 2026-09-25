@@ -6,8 +6,8 @@
 
 | 目录 | 说明 |
 | --- | --- |
-| `XingyuMusic-desktop/` | Windows 端（Electron + Vue，基于开源 lx-music-desktop v2.12.6 复刻） |
-| `XingyuMusic-mobile/` | Android 端（React Native，基于开源 lx-music-mobile v1.9.1 复刻） |
+| `XingyuMusic-desktop/` | Windows 端（Electron + Vue） |
+| `XingyuMusic-mobile/` | Android 端（React Native） |
 
 图标源文件在仓库外：`D:\Agent\icon\XingyuMusic-icons`（ico/png/bmp/1024 源图）。
 
