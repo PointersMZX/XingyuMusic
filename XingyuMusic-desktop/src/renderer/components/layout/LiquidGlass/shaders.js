@@ -132,7 +132,7 @@ void main() {
   vec3 rgb = col.rgb * shade + u_base.rgb * u_base.a;
 
   // 液态微光（缓慢呼吸，让玻璃"活着"）
-  float caustic = 0.03 * (0.5 + 0.5 * sin(u_time * 0.6 + css.x * 0.045 + css.y * 0.09));
+  float caustic = 0.075 * (0.5 + 0.5 * sin(u_time * 0.6 + css.x * 0.045 + css.y * 0.09));
   rgb += caustic * u_edgeColor.rgb * u_edgeColor.a;
 
   // ---------- SDF 边缘光（Metric s3）：流光方向随时间摆动 ----------
@@ -148,15 +148,15 @@ void main() {
 
   // 顶部镜面光
   float sheen = (1.0 - smoothstep(0.0, 1.0, css.y / max(u_panelSize.y, 1.0))) * u_sheen;
-  rgb += u_edgeColor.rgb * sheen * 0.55;
+  rgb += u_edgeColor.rgb * sheen * 0.7;
 
   // ---------- 指针高光（Metric s1） ----------
   float gd = distance(css, u_pointer);
-  float glow = (1.0 - smoothstep(45.0, 130.0, gd)) * u_pointerA * u_glow;
+  float glow = (1.0 - smoothstep(35.0, 170.0, gd)) * u_pointerA * u_glow;
   rgb += u_glowColor.rgb * glow;
 
   // ---------- 合成 ----------
-  float alpha = coverage * clamp(u_base.a + u_tint.a * 0.85 + rim * 0.7 + sheen * 0.55 + glow * 0.6, 0.0, 0.99);
+  float alpha = coverage * clamp(u_base.a + u_tint.a * 0.85 + rim * 0.9 + sheen * 0.7 + glow * 0.75, 0.0, 0.99);
   gl_FragColor = vec4(rgb, alpha);
 }
 `

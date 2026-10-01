@@ -54,6 +54,8 @@ import NavBar from './NavBar.vue'
     width: 32px;
     height: 32px;
     user-select: none;
+    // 紫金黑主题：金色辉光（其他主题 token 为 none）
+    filter: var(--color-logo-glow, none);
   }
 }
 

@@ -158,7 +158,8 @@ export default {
     height: 100%;
     width: 100%;
     // position: absolute;
-    background-color: var(--color-primary-light-100-alpha-400);
+    // 紫金黑主题下为紫→金渐变（--color-progress），其他主题保持原纯色
+    background: var(--color-progress, var(--color-primary-light-100-alpha-400));
     // left: 0;
     // top: 0;
     transform-origin: 0;

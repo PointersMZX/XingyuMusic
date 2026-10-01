@@ -241,10 +241,10 @@
         "--color-000": "rgb(86,85,92)"
       },
       "extInfo": {
-        "--color-app-background": "rgba(18, 3, 31, 0.25)",
-        "--color-main-background": "rgba(13, 7, 22, 0.82)",
+        "--color-app-background": "rgba(22, 5, 38, 0.35)",
+        "--color-main-background": "rgba(16, 7, 30, 0.58)",
         "--color-nav-font": "var(--color-primary-light-300)",
-        "--background-image": "radial-gradient(1100px 700px at 18% -10%, rgba(124, 32, 194, 0.4), transparent 62%), radial-gradient(900px 600px at 88% 110%, rgba(212, 176, 111, 0.16), transparent 55%), radial-gradient(700px 500px at 55% 50%, rgba(63, 15, 90, 0.35), transparent 70%)",
+        "--background-image": "radial-gradient(1300px 820px at 18% -10%, rgba(124, 32, 194, 0.7), transparent 62%), radial-gradient(1000px 680px at 88% 110%, rgba(212, 176, 111, 0.5), transparent 55%), radial-gradient(800px 560px at 55% 50%, rgba(63, 15, 90, 0.55), transparent 70%)",
         "--background-image-position": "center",
         "--background-image-size": "cover",
         "--color-btn-hide": "#3bc2b2",
@@ -253,10 +253,13 @@
         "--color-badge-primary": "var(--color-primary)",
         "--color-badge-secondary": "#D4B06F",
         "--color-badge-tertiary": "#F1DDA1",
-        "--color-glass-edge": "rgba(232, 208, 158, 0.75)",
-        "--color-glass-base": "rgba(13, 7, 22, 0.42)",
-        "--color-glass-tint": "rgba(124, 32, 194, 0.38)",
-        "--color-content-background": "rgba(13, 7, 22, 0.86)",
+        "--color-glass-edge": "rgba(232, 208, 158, 0.9)",
+        "--color-glass-base": "rgba(24, 8, 46, 0.5)",
+        "--color-glass-tint": "rgba(124, 32, 194, 0.5)",
+        "--color-content-background": "rgba(16, 7, 30, 0.62)",
+        "--color-progress": "linear-gradient(90deg, #8A2FD6 0%, #B44BC8 45%, #D4B06F 100%)",
+        "--color-progress-ring": "linear-gradient(135deg, #8A2FD6 0%, #4A1269 55%, #D4B06F 100%)",
+        "--color-logo-glow": "drop-shadow(0 0 5px rgba(212, 176, 111, 0.6)) drop-shadow(0 0 10px rgba(124, 32, 194, 0.5))",
         "--liquid-glass": "true"
       }
     }
@@ -519,7 +522,10 @@
         "--color-glass-tint": "transparent",
         "--color-content-background": "#f5f5f7",
         "--color-glass-base": "rgb(255, 255, 255)",
-        "--liquid-glass": "false"
+        "--liquid-glass": "false",
+        "--color-progress": "var(--color-primary-light-100-alpha-400)",
+        "--color-progress-ring": "transparent",
+        "--color-logo-glow": "none"
       }
     }
   },
@@ -781,7 +787,10 @@
         "--color-glass-tint": "transparent",
         "--color-content-background": "#0a0a0d",
         "--color-glass-base": "rgb(12, 12, 16)",
-        "--liquid-glass": "false"
+        "--liquid-glass": "false",
+        "--color-progress": "var(--color-primary-light-100-alpha-400)",
+        "--color-progress-ring": "transparent",
+        "--color-logo-glow": "none"
       }
     }
   }

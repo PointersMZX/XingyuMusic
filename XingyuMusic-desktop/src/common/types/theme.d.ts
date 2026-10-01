@@ -290,6 +290,13 @@ declare namespace LX {
         '--color-content-background': string
         '--color-glass-base': string
 
+        // 进度条填充（紫金黑=紫→金渐变，其他主题=原纯色）
+        '--color-progress': string
+
+        // 主播放按钮宝石圆 / Logo 辉光（仅紫金黑定义，其他主题=无点缀）
+        '--color-progress-ring': string
+        '--color-logo-glow': string
+
         // 液态玻璃总开关（'true'/'false'，自定义主题可在编辑器中切换）
         '--liquid-glass': string
 

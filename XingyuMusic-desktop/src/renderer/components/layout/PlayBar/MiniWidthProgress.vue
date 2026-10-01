@@ -334,6 +334,16 @@ export default {
   &:active {
     opacity: 0.6;
   }
+
+  // 主播放按钮（紫金黑=紫金渐变宝石圆，其他主题 token 为 transparent 不渲染）
+  &:nth-child(2) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    background: var(--color-progress-ring, transparent);
+  }
 }
 
 </style>

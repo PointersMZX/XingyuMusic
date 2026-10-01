@@ -121,11 +121,12 @@ export default {
   transform-origin: 0;
 }
 .progressBar1 {
-  background-color: var(--color-primary-light-100-alpha-600);
+  // 紫金黑主题下为紫→金渐变（--color-progress），其他主题保持原纯色
+  background: var(--color-progress, var(--color-primary-light-100-alpha-600));
 }
 
 .progressBar2 {
-  background-color: var(--color-primary-light-100-alpha-400);
+  background: var(--color-progress, var(--color-primary-light-100-alpha-400));
   will-change: transform;
 }
 
