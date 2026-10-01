@@ -32,16 +32,26 @@ export default () => {
     const dir = filePaths[0]
     if (dirs.value.includes(dir)) return
     setDirs([...dirs.value, dir])
-    void scanAndAppend([dir])
+    // 等正在进行的扫描结束再追加扫描，避免新目录被漏扫
+    void waitScanIdle().then(() => {
+      void scanAndAppend([dir])
+    })
   }
 
   /**
-   * 移除目录（不删除本地文件），然后重扫剩余目录
+   * 移除目录（不删除本地文件），然后重扫剩余目录；目录清空时同步清空本地列表
    */
   const removeDir = (index: number) => {
     if (index < 0 || index >= dirs.value.length) return
     setDirs(dirs.value.filter((_, i) => i != index))
-    void rescan()
+    if (!dirs.value.length) {
+      void waitScanIdle().then(async() => {
+        await overwriteListMusics({ listId: LIST_IDS.LOCAL, musicInfos: [] })
+        window.app_event.myListUpdate([LIST_IDS.LOCAL])
+      })
+      return
+    }
+    void waitScanIdle().then(rescan)
   }
 
   /**
@@ -106,6 +116,17 @@ export default () => {
     const list = await getListMusics(LIST_IDS.LOCAL)
     if (!list.length) await rescan()
   }
+
+  /**
+   * 等待正在进行的扫描结束（500ms 轮询）
+   */
+  const waitScanIdle = async() => new Promise<void>(resolve => {
+    const tick = () => {
+      if (isScanning.value) setTimeout(tick, 500)
+      else resolve()
+    }
+    tick()
+  })
 
   return {
     dirs,

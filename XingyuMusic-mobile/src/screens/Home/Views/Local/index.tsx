@@ -47,13 +47,14 @@ const LocalToolbar = ({ isShowDirs, onToggleDirs, onRefresh }: {
   )
 }
 
-const DirRow = ({ index, total, path, onMoveUp, onMoveDown, onRemove }: {
+const DirRow = ({ index, total, path, onMoveUp, onMoveDown, onRemove, removeDisabled }: {
   index: number
   total: number
   path: string
   onMoveUp: () => void
   onMoveDown: () => void
   onRemove: () => void
+  removeDisabled?: boolean
 }) => {
   const theme = useTheme()
   // SAF 目录 URI 只显示最后一段，完整路径做 title
@@ -70,7 +71,7 @@ const DirRow = ({ index, total, path, onMoveUp, onMoveDown, onRemove }: {
         <TouchableOpacity style={iconBtnStyle} disabled={index == total - 1} onPress={onMoveDown}>
           <Icon name="chevron-right" size={14} color={theme['c-400']} style={{ transform: [{ rotate: '90deg' }] }} />
         </TouchableOpacity>
-        <TouchableOpacity style={iconBtnStyle} onPress={onRemove}>
+        <TouchableOpacity style={[iconBtnStyle, { opacity: removeDisabled ? 0.4 : 1 }]} disabled={removeDisabled} onPress={onRemove}>
           <Icon name="remove" size={14} color={theme['c-500']} />
         </TouchableOpacity>
       </View>
@@ -120,12 +121,14 @@ export default memo(() => {
   }
 
   const handleAddDir = () => {
+    if (fetching) return
     void addLocalDir().then(isAdded => {
       if (isAdded) refreshDirs()
     })
   }
 
   const handleRemoveDir = (index: number) => {
+    if (fetching) return
     void removeLocalDir(index).then(() => {
       refreshDirs()
       refreshSongs()
@@ -145,6 +148,7 @@ export default memo(() => {
   const { playMusicInfo, playInfo } = playerState
   const isPlayList = playMusicInfo.listId == LOCAL_LIST_ID
   const playIndex = isPlayList ? playInfo.playIndex : -1
+  const fetching = useListFetching(LOCAL_LIST_ID)
 
   const renderItem = ({ item, index }: { item: LX.Music.MusicInfo, index: number }) => {
     const active = playIndex == index
@@ -198,10 +202,11 @@ export default memo(() => {
                   onMoveUp={() => { handleMoveDir(index, index - 1) }}
                   onMoveDown={() => { handleMoveDir(index, index + 1) }}
                   onRemove={() => { handleRemoveDir(index) }}
+                  removeDisabled={fetching}
                 />
               ))
             }
-            <TouchableOpacity style={styles.addDirRow} activeOpacity={0.7} onPress={handleAddDir}>
+            <TouchableOpacity style={[styles.addDirRow, { opacity: fetching ? 0.4 : 1 }]} activeOpacity={0.7} disabled={fetching} onPress={handleAddDir}>
               <Icon name="add_folder" size={14} color={theme['c-primary-font']} />
               <Text style={styles.addDirRowText} color={theme['c-primary-font']}>{t('local_add_dir')}</Text>
             </TouchableOpacity>
