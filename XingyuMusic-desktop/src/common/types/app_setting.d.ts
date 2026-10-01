@@ -496,6 +496,11 @@ declare global {
       'list.actionButtonsVisible': boolean
 
       /**
+       * 本地音乐目录列表（顺序即扫描/展示顺序）
+       */
+      'local.dirs': string[]
+
+      /**
        * 是否启用下载功能
        */
       'download.enable': boolean

@@ -48,6 +48,15 @@ export default {
           enable: true,
         },
         {
+          to: '/local',
+          tips: t('local_music'),
+          icon: '#icon-folder',
+          iconSize: '0 0 425.2 425.2',
+          size,
+          name: 'Local',
+          enable: true,
+        },
+        {
           to: '/download',
           tips: t('download'),
           icon: '#icon-download-2',

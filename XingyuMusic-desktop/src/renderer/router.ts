@@ -31,6 +31,14 @@ const router = createRouter({
       },
     },
     {
+      path: '/local',
+      name: 'Local',
+      component: require('./views/Local/index.vue').default,
+      meta: {
+        name: 'Local',
+      },
+    },
+    {
       path: '/download',
       name: 'Download',
       component: require('./views/Download/index.vue').default,
