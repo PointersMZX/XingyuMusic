@@ -28,6 +28,7 @@ const dislikeListPrefix = storageDataPrefix.dislikeList
 const userApiPrefix = storageDataPrefix.userApi
 const openStoragePathPrefix = storageDataPrefix.openStoragePath
 const selectedManagedFolderPrefix = storageDataPrefix.selectedManagedFolder
+const localDirsPrefix = storageDataPrefix.localDirs
 
 // const defaultListKey = listPrefix + 'default'
 // const loveListKey = listPrefix + 'love'
@@ -433,6 +434,16 @@ export const getSelectedManagedFolder = async() => {
   let uri = await getData<string>(selectedManagedFolderPrefix)
   if (selectedManagedFolder != uri) selectedManagedFolder = uri
   return selectedManagedFolder
+}
+
+/**
+ * 本地音乐目录列表（顺序即扫描/展示顺序）
+ */
+export const getLocalDirs = async(): Promise<string[]> => {
+  return (await getData<string[]>(localDirsPrefix)) ?? []
+}
+export const saveLocalDirs = async(dirs: string[]) => {
+  return saveData(localDirsPrefix, dirs)
 }
 
 export const getSyncAuthKey = async(serverId: string) => {

@@ -12,6 +12,7 @@ export const LIST_IDS = {
   LOVE: 'love',
   TEMP: 'temp',
   DOWNLOAD: 'download',
+  LOCAL: 'local',
   PLAY_LATER: null,
 } as const
 
@@ -57,6 +58,7 @@ export const storageDataPrefix = {
 
   openStoragePath: '@open_storage_path',
   selectedManagedFolder: '@selected_managed_folder',
+  localDirs: '@local_dirs',
   notificationTipEnable: '@notification_tip_enable',
   ignoringBatteryOptimizationTipEnable: '@ignoring_battery_optimization_tip_enable',
 
@@ -100,6 +102,7 @@ export const APP_PROVIDER_NAME = 'cn.toside.music.mobile.provider'
 export const NAV_MENUS = [
   { id: 'nav_search', icon: 'search-2' },
   { id: 'nav_songlist', icon: 'album' },
+  { id: 'nav_local', icon: 'sd-card' },
   { id: 'nav_love', icon: 'love' },
   // { id: 'download', icon: 'download-2' },
   { id: 'nav_setting', icon: 'setting' },
