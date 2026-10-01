@@ -114,9 +114,9 @@ jobs:
           make_latest: true
           files: release-apk/*.apk
           body: |
-            首个公开 Beta 版：双端液态玻璃 UI（GPU 着色器）+ 4 主题体系 + 品牌全换。
+            首个正式版：双端新增「本地音乐」（自定义音乐目录、扫描/刷新/排序/删目录），液态玻璃与紫金黑主题大幅增强，玻璃效果更明显、紫金黑与纯黑拉开差异。
 
-            - Android：APK（universal + 分 ABI；beta 阶段使用调试签名，正式签名后续版本替换）
+            - Android：APK（universal + 分 ABI；当前使用调试签名，正式上架前替换为自有签名）
             - Windows：安装版（NSIS）由维护者手动上传，请留意补充
 
             桌面端旧版提示/更新检查数据源：仓库根 `publish/version.json`。
