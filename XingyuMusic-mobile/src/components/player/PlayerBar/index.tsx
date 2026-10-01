@@ -18,21 +18,37 @@ export default memo(({ isHome = false }: { isHome?: boolean }) => {
   const theme = useTheme()
   const autoHidePlayBar = useSettingValue('common.autoHidePlayBar')
 
-  const playerComponent = useMemo(() => (
-    <View style={{ ...styles.container, backgroundColor: theme['c-glass-tint'] ?? theme['c-content-background'], borderTopWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
-      <Pic isHome={isHome} />
-      <View style={styles.center}>
-        <Title isHome={isHome} />
-        {/* <View style={{ ...styles.row, justifyContent: 'space-between' }}>
-          <PlayTime />
-        </View> */}
-        <PlayInfo isHome={isHome} />
+  // 液态玻璃（c-liquid-glass=true）：紫金外发光 + 顶部高光，玻璃质感更强
+  const isLiquidGlass = theme['c-liquid-glass'] == 'true'
+
+  const playerComponent = useMemo(() => {
+    // 液态玻璃（c-liquid-glass=true）：紫金外发光 + 顶部高光，玻璃质感更强
+    const glassStyle = isLiquidGlass ? {
+      shadowColor: '#7C20C2',
+      shadowOffset: { width: 0, height: -3 },
+      shadowOpacity: 0.55,
+      shadowRadius: 24,
+      elevation: 14,
+    } : {}
+    return (
+      <View style={{ ...styles.container, ...glassStyle, backgroundColor: theme['c-glass-tint'] ?? theme['c-content-background'], borderTopWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
+        {
+          isLiquidGlass ? <View style={styles.glassHighlight} /> : null
+        }
+        <Pic isHome={isHome} />
+        <View style={styles.center}>
+          <Title isHome={isHome} />
+          {/* <View style={{ ...styles.row, justifyContent: 'space-between' }}>
+            <PlayTime />
+          </View> */}
+          <PlayInfo isHome={isHome} />
+        </View>
+        <View style={styles.right}>
+          <ControlBtn />
+        </View>
       </View>
-      <View style={styles.right}>
-        <ControlBtn />
-      </View>
-    </View>
-  ), [theme, isHome])
+    )
+  }, [theme, isHome, isLiquidGlass])
 
   // console.log('render pb')
 
@@ -57,6 +73,16 @@ const styles = createStyle({
     flexDirection: 'row',
     alignItems: 'center',
     elevation: 10,
+  },
+  // 液态玻璃顶部镜面高光（1px 白色细线）
+  glassHighlight: {
+    position: 'absolute',
+    top: 1,
+    left: 14,
+    right: 14,
+    height: 1,
+    borderRadius: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
   },
   left: {
     // borderRadius: 3,

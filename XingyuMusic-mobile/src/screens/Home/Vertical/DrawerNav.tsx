@@ -20,6 +20,15 @@ const styles = createStyle({
     // justifyContent: 'center',
     // padding: 10,
   },
+  // 液态玻璃右缘高光（1px 白色竖线）
+  glassHighlight: {
+    position: 'absolute',
+    top: 0,
+    right: 1,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
+  },
   header: {
     paddingTop: 40,
     paddingBottom: 50,
@@ -102,6 +111,15 @@ export default memo(() => {
   const showBackBtn = useSettingValue('common.showBackBtn')
   const showExitBtn = useSettingValue('common.showExitBtn')
 
+  // 液态玻璃（c-liquid-glass=true）：紫金外发光 + 右缘高光
+  const isLiquidGlass = theme['c-liquid-glass'] == 'true'
+  const glassStyle = isLiquidGlass ? {
+    shadowColor: '#7C20C2',
+    shadowOffset: { width: 3, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 18,
+  } : {}
+
   const handlePress = (id: IdType) => {
     switch (id) {
       case 'nav_exit':
@@ -124,7 +142,10 @@ export default memo(() => {
 
 
   return (
-    <View style={{ ...styles.container, backgroundColor: theme['c-glass-tint'] ?? theme['c-content-background'], borderRightWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
+    <View style={{ ...styles.container, ...glassStyle, backgroundColor: theme['c-glass-tint'] ?? theme['c-content-background'], borderRightWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
+      {
+        isLiquidGlass ? <View style={styles.glassHighlight} /> : null
+      }
       <Header />
       <ScrollView style={styles.menus}>
         <View style={styles.list}>

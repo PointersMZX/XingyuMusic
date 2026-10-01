@@ -17,14 +17,14 @@ const defaultThemes = [
     config: {
       primary: 'rgb(124, 32, 194)',
       font: 'rgb(240, 236, 255)',
-      'c-app-background': 'rgba(18, 3, 31, 0.35)',
-      'c-main-background': 'rgba(13, 7, 22, 0.88)',
-      'bg-image': '',
+      'c-app-background': 'rgba(22, 5, 38, 0.4)',
+      'c-main-background': 'rgba(16, 7, 30, 0.62)',
+      'bg-image': 'xingyu_glass.jpg',
       'bg-image-position': 'center',
       'bg-image-size': 'cover',
       // 液态玻璃（底栏/侧栏玻璃键）
-      'c-glass-edge': 'rgba(232, 208, 158, 0.75)',
-      'c-glass-tint': 'rgba(124, 32, 194, 0.36)',
+      'c-glass-edge': 'rgba(232, 208, 158, 0.9)',
+      'c-glass-tint': 'rgba(124, 32, 194, 0.5)',
       'c-liquid-glass': 'true',
 
       'c-badge-primary': 'var(c-primary)',

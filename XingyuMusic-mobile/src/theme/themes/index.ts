@@ -13,6 +13,8 @@ export const BG_IMAGES = {
   'landingMoon.png': require('./images/landingMoon2.png') as ImageSourcePropType,
   'myzcbg.jpg': require('./images/myzcbg.jpg') as ImageSourcePropType,
   'xnkl.png': require('./images/xnkl.png') as ImageSourcePropType,
+  // 紫金黑主题内置壁纸（紫金舞台光，给液态玻璃折射提供色彩）
+  'xingyu_glass.jpg': require('./images/xingyu_glass.jpg') as ImageSourcePropType,
 } as const
 
 
