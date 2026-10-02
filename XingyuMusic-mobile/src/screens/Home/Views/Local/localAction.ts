@@ -5,11 +5,32 @@ import { getLocalDirs, saveLocalDirs } from '@/utils/data'
 import { getListMusics } from '@/utils/listManage'
 import { addListMusics, overwriteListMusics, updateListMusics, setFetchingListStatus } from '@/core/list'
 import { toast } from '@/utils/tools'
-import { buildLocalMusicInfoByFilePath, buildLocalMusicInfo } from '../Mylist/MyList/listAction'
+import { formatPlayTime2 } from '@/utils'
+import settingState from '@/store/setting/state'
+import { buildLocalMusicInfoByFilePath } from '../Mylist/MyList/listAction'
 
 export const LOCAL_LIST_ID = LIST_IDS.LOCAL
+export const LOCAL_SORT_OPTIONS: LX.LocalSortType[] = ['new', 'old', 'az', 'za', 'custom']
 
 type ProgressFn = (scanned: number, total: number) => void
+
+const getLocalSortType = (): LX.LocalSortType => settingState.setting['local.sortType'] ?? 'new'
+const mtimeOf = (m: LX.Music.MusicInfo): number => ((m.meta as LX.Music.MusicInfoLocal['meta']).mtime ?? 0)
+
+/**
+ * 按默认排序方式对本地歌曲列表排序（custom=保持现状）
+ */
+const sortLocalSongs = (list: LX.Music.MusicInfo[], sortType: LX.LocalSortType): LX.Music.MusicInfo[] => {
+  if (sortType == 'custom' || !list.length) return list
+  const arr = [...list]
+  switch (sortType) {
+    case 'old': arr.sort((a, b) => mtimeOf(a) - mtimeOf(b)); break // 由旧至新
+    case 'new': arr.sort((a, b) => mtimeOf(b) - mtimeOf(a)); break // 由新至旧
+    case 'az': arr.sort((a, b) => a.name.localeCompare(b.name, 'zh')); break
+    case 'za': arr.sort((a, b) => b.name.localeCompare(a.name, 'zh')); break
+  }
+  return arr
+}
 
 /**
  * 递归收集目录下的音频文件（scanAudioFiles 只扫一层，子目录需要自己递归）
@@ -35,8 +56,8 @@ const collectAudioFiles = async(dir: string, files: FileType[] = []): Promise<Fi
 }
 
 /**
- * 批量补充本地歌曲元数据（占位歌曲 → 完整标签），只持久化真正读到标签的歌曲
- * @param files 需要读元数据的文件
+ * 批量补充本地歌曲「时长 + 文件修改时间」（v1.0.1：只取文件名与时长，不再解析专辑/歌手/歌名标签，也不读封面）
+ * @param files 需要补时长的文件
  * @param onProgress 进度回调（可选）
  */
 const enrichLocalMusics = async(files: FileType[], onProgress?: ProgressFn): Promise<void> => {
@@ -47,13 +68,15 @@ const enrichLocalMusics = async(files: FileType[], onProgress?: ProgressFn): Pro
   for (const file of files) {
     onProgress?.(++i, files.length)
     const cached = existingMap.get(file.path)
-    // 已有元数据（interval 非空）的不再重复读
-    if (cached?.interval != null) continue
-    const metadata = await readMetadata(file.path).catch(() => null)
-    if (!metadata) continue
     if (!cached) continue
-    // 内存中的对象就是列表里的同一引用，原地替换字段
-    Object.assign(cached, buildLocalMusicInfo(file.path, metadata))
+    const meta = cached.meta as LX.Music.MusicInfoLocal['meta']
+    // 记录文件修改时间（用于按新旧排序）
+    if (file.lastModified) meta.mtime = file.lastModified
+    // 仅补时长（歌名=文件名，已在此前占位时写入）
+    if (cached.interval == null) {
+      const metadata = await readMetadata(file.path).catch(() => null)
+      if (metadata?.interval != null) cached.interval = formatPlayTime2(metadata.interval)
+    }
     updates.push({ id: LOCAL_LIST_ID, musicInfo: cached })
   }
   if (updates.length) await updateListMusics(updates)
@@ -67,7 +90,16 @@ export const registerLocalMusic = async(): Promise<void> => {
 }
 
 /**
- * 重新扫描全部目录（覆盖本地列表），可传进度回调
+ * 应用当前默认排序（读取列表 → 排序 → 覆盖持久化）
+ */
+export const applyLocalSort = async(sortType: LX.LocalSortType = getLocalSortType()): Promise<void> => {
+  const list = await getListMusics(LOCAL_LIST_ID)
+  if (!list.length) return
+  await overwriteListMusics(LOCAL_LIST_ID, sortLocalSongs(list, sortType))
+}
+
+/**
+ * 重新扫描全部目录（覆盖本地列表），并按当前默认排序整理
  * @param onProgress 进度回调（可选）
  * @returns 扫描到的歌曲总数
  */
@@ -81,7 +113,7 @@ export const rescanLocalMusic = async(onProgress?: ProgressFn): Promise<number> 
   const files: FileType[] = []
   for (const dir of dirs) await collectAudioFiles(dir, files)
 
-  // 有缓存元数据的直接复用，其余先占位
+  // 有缓存时长的直接复用，其余先占位（歌名=文件名，mtime 已随占位写入）
   const cached = await getListMusics(LOCAL_LIST_ID)
   const cachedMap = new Map<string, LX.Music.MusicInfo>()
   for (const item of cached) cachedMap.set(item.id, item)
@@ -92,8 +124,8 @@ export const rescanLocalMusic = async(onProgress?: ProgressFn): Promise<number> 
     needEnrich.push(file)
     return buildLocalMusicInfoByFilePath(file)
   })
-  await overwriteListMusics(LOCAL_LIST_ID, musics)
-  // 后台补全元数据
+  await overwriteListMusics(LOCAL_LIST_ID, sortLocalSongs(musics, getLocalSortType()))
+  // 后台补全时长
   void enrichLocalMusics(needEnrich, onProgress)
     .finally(() => { setFetchingListStatus(LOCAL_LIST_ID, false) })
   return musics.length
@@ -118,6 +150,8 @@ export const addLocalDir = async(): Promise<boolean> => {
   if (files.length) {
     // addListMusics 自带按 id 去重
     await addListMusics(LOCAL_LIST_ID, files.map(buildLocalMusicInfoByFilePath), 'bottom')
+    // 追加后按当前默认排序重排（custom=保持追加顺序）
+    if (getLocalSortType() != 'custom') await applyLocalSort()
     void enrichLocalMusics(files)
   }
   setFetchingListStatus(LOCAL_LIST_ID, false)

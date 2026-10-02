@@ -106,6 +106,7 @@ export const buildLocalMusicInfoByFilePath = (file: FileType): LX.Music.MusicInf
       songId: file.path,
       picUrl: '',
       ext: file.name.substring(index + 1),
+      mtime: file.lastModified,
     },
   }
 }

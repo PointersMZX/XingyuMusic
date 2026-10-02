@@ -110,6 +110,7 @@ const defaultSetting: LX.AppSetting = {
   'list.actionButtonsVisible': false,
 
   'local.dirs': [],
+  'local.sortType': 'new',
 
   'download.enable': false,
   'download.isSavePathGroupByListName': false,

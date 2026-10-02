@@ -4,18 +4,18 @@
       <table>
         <thead>
           <tr v-if="actionButtonsVisible">
-            <th class="num" style="width: 5%;">#</th>
+            <th class="num" style="width: 7%;">#</th>
             <th class="nobreak">{{ $t('music_name') }}</th>
-            <th class="nobreak" style="width: 22%;">{{ $t('music_singer') }}</th>
-            <th class="nobreak" style="width: 22%;">{{ $t('music_album') }}</th>
+            <th v-if="!isLocal" class="nobreak" style="width: 22%;">{{ $t('music_singer') }}</th>
+            <th v-if="!isLocal" class="nobreak" style="width: 22%;">{{ $t('music_album') }}</th>
             <th class="nobreak" style="width: 9%;">{{ $t('music_time') }}</th>
             <th class="nobreak" style="width: 16%;">{{ $t('action') }}</th>
           </tr>
           <tr v-else>
-            <th class="num" style="width: 5%;">#</th>
+            <th class="num" style="width: 7%;">#</th>
             <th class="nobreak">{{ $t('music_name') }}</th>
-            <th class="nobreak" style="width: 25%;">{{ $t('music_singer') }}</th>
-            <th class="nobreak" style="width: 28%;">{{ $t('music_album') }}</th>
+            <th v-if="!isLocal" class="nobreak" style="width: 25%;">{{ $t('music_singer') }}</th>
+            <th v-if="!isLocal" class="nobreak" style="width: 28%;">{{ $t('music_album') }}</th>
             <th class="nobreak" style="width: 10%;">{{ $t('music_time') }}</th>
           </tr>
         </thead>
@@ -31,7 +31,7 @@
           class="list-item" :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
-          <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 5%;">
+          <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
             <transition name="play-active">
               <div v-if="playerInfo.isPlayList && playerInfo.playIndex === index" :class="$style.playIcon">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 512 512" space="preserve">
@@ -45,8 +45,8 @@
             <span class="select name">{{ item.name }}</span>
             <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
           </div>
-          <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
-          <div class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
+          <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+          <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 22%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 9%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 16%; padding-left: 0; padding-right: 0;">
             <material-list-buttons :index="index" :download-btn="assertApiSupport(item.source) && item.source != 'local'" @btn-click="handleListBtnClick" />
@@ -63,7 +63,7 @@
           :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
-          <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 5%;">
+          <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
             <transition name="play-active">
               <div v-if="playerInfo.isPlayList && playerInfo.playIndex === index" :class="$style.playIcon">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 512 512" space="preserve">
@@ -77,8 +77,8 @@
             <span class="select name" :aria-label="item.name">{{ item.name }}</span>
             <span v-if="isShowSource" class="no-select label-source">{{ item.source }}</span>
           </div>
-          <div class="list-item-cell" style="flex: 0 0 25%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
-          <div class="list-item-cell" style="flex: 0 0 28%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
+          <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 25%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
+          <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 28%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 10%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
         </div>
       </base-virtualized-list>
@@ -105,6 +105,7 @@
 
 <script>
 import { clipboardWriteText } from '@common/utils/electron'
+import { LIST_IDS } from '@common/constants'
 import { assertApiSupport } from '@renderer/store/utils'
 import SearchList from './components/SearchList.vue'
 import MusicSortModal from './components/MusicSortModal.vue'
@@ -137,6 +138,8 @@ export default {
   emits: ['show-menu'],
   setup(props, { emit }) {
     const actionButtonsVisible = appSetting['list.actionButtonsVisible']
+    // 本地音乐列表：只展示「文件名 + 时长」，隐藏歌手/专辑列（这两列已不再解析）
+    const isLocal = props.listId == LIST_IDS.LOCAL
 
     let scrollIndex = null
     let isAnimation = false
@@ -350,6 +353,7 @@ export default {
       handleRestoreScroll,
 
       actionButtonsVisible,
+      isLocal,
 
       isShowMusicToggleModal,
       selectedToggleMusicInfo,

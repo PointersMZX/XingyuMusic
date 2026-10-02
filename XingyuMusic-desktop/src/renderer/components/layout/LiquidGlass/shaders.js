@@ -85,8 +85,8 @@ void main() {
     vec2 grad = normalize(gradSdRoundedRect(centered, halfSize, gr) + u_depthEffect * normalize(centered + vec2(0.001)));
     dispDir = d * grad;
   }
-  // 色散强度：Metric 原式 (centered.x*centered.y)/(halfSize.x*halfSize.y) —— 四角最强、四边中点为 0
-  float ds = u_chromatic * (centered.x * centered.y) / (halfSize.x * halfSize.y);
+  // 色散强度：沿整条边缘都有色散（0.3 基底 + 四角加强），让「液态」感贯穿整块玻璃而非只出现在角落
+  float ds = u_chromatic * (0.3 + 0.7 * (centered.x * centered.y) / (halfSize.x * halfSize.y));
   vec2 off = dispDir * ds;
 
   float uvA = 1.0 / u_windowSize.x;

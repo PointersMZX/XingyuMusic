@@ -1,10 +1,10 @@
 /* ===== XingyuMusic · 液态玻璃 v3 =====
    观感基准 = Metric v1.4.3 液态玻璃底栏。
    三层参数全部走主题键：
-   - --color-glass-base   玻璃底板（紫金黑=半透 rgba 0.42，其他主题=不透明 main-background）
-   - --color-glass-tint   紫色玻璃染色（紫金黑=0.38，其他主题=transparent）
-   - --color-glass-edge   金色发丝描边（紫金黑=0.75，其他主题=transparent）
-   要点：底栏/顶栏的底板必须半透，磨砂（backdrop blur）折射才看得见；
+   - --color-glass-base   玻璃底板（紫金黑=半透磨砂 rgba 0.42，折射源为不透明紫金舞台；其他主题=不透明 main-background）
+   - --color-glass-tint   紫色玻璃染色（紫金黑=0.35，其他主题=transparent）
+   - --color-glass-edge   金色发丝描边（紫金黑=0.9，其他主题=transparent）
+   要点：底栏/顶栏的底板半透磨砂，折射源=不透明紫金舞台（#root 底色不透明，杜绝透到桌面壁纸）；
    导航栏（#left）不做磨砂——导航要清晰，只用纯色面板 + 金色边缘光。 */
 
 /* 顶栏：玻璃面板 */

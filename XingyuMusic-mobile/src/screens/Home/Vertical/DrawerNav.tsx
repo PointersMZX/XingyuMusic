@@ -70,10 +70,10 @@ const Header = () => {
   const theme = useTheme()
   const statusBarHeight = useStatusbarHeight()
   return (
-    <View style={{ paddingTop: statusBarHeight, backgroundColor: theme['c-primary-light-700-alpha-500'] }}>
+    <View style={{ paddingTop: statusBarHeight, backgroundColor: theme['c-content-background'] }}>
       <View style={styles.header}>
         <Image source={require('@/resources/images/xingyu-logo.png')} style={{ width: 30, height: 30, marginRight: 8 }} resizeMode="contain" />
-        <Text style={styles.headerText} size={28} color={theme['c-primary-dark-100-alpha-300']}>XingyuMusic</Text>
+        <Text style={styles.headerText} size={28} color={theme['c-font']}>XingyuMusic</Text>
       </View>
     </View>
   )
@@ -142,7 +142,7 @@ export default memo(() => {
 
 
   return (
-    <View style={{ ...styles.container, ...glassStyle, backgroundColor: theme['c-glass-tint'] ?? theme['c-content-background'], borderRightWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
+    <View style={{ ...styles.container, ...glassStyle, backgroundColor: theme['c-content-background'], borderRightWidth: 1, borderColor: theme['c-glass-edge'] ?? 'transparent' }}>
       {
         isLiquidGlass ? <View style={styles.glassHighlight} /> : null
       }

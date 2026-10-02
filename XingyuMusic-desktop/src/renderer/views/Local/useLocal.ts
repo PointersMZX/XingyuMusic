@@ -9,8 +9,38 @@ import {
 import { showSelectDialog } from '@renderer/utils/ipc'
 import { proxyCallback } from '@renderer/worker/utils'
 
+type LocalSortType = 'old' | 'new' | 'az' | 'za' | 'custom'
+
+export const LOCAL_SORT_OPTIONS: LocalSortType[] = ['new', 'old', 'az', 'za', 'custom']
+
+/**
+ * 按默认排序方式对本地歌曲列表排序（custom=保持现状，不排序）
+ */
+const sortLocalList = (list: LX.Music.MusicInfo[], sortType: LocalSortType): LX.Music.MusicInfo[] => {
+  if (sortType == 'custom' || !list.length) return list
+  const arr = [...list]
+  switch (sortType) {
+    case 'old':
+      // 由旧至新（按文件修改时间升序）
+      arr.sort((a, b) => ((a.meta as LX.Music.MusicInfoLocal['meta']).mtime ?? 0) - ((b.meta as LX.Music.MusicInfoLocal['meta']).mtime ?? 0))
+      break
+    case 'new':
+      // 由新至旧（按文件修改时间降序）
+      arr.sort((a, b) => ((b.meta as LX.Music.MusicInfoLocal['meta']).mtime ?? 0) - ((a.meta as LX.Music.MusicInfoLocal['meta']).mtime ?? 0))
+      break
+    case 'az':
+      arr.sort((a, b) => a.name.localeCompare(b.name, 'zh'))
+      break
+    case 'za':
+      arr.sort((a, b) => b.name.localeCompare(a.name, 'zh'))
+      break
+  }
+  return arr
+}
+
 export default () => {
   const dirs = ref<string[]>([...(appSetting['local.dirs'] ?? [])])
+  const sortType = ref<LocalSortType>(appSetting['local.sortType'] ?? 'new')
   const isScanning = ref(false)
   const scanProgress = ref('')
   const isShowDirs = ref(true)
@@ -18,6 +48,24 @@ export default () => {
   const setDirs = (list: string[]) => {
     dirs.value = [...list]
     updateSetting({ 'local.dirs': list })
+  }
+
+  const setSortType = (type: LocalSortType) => {
+    sortType.value = type
+    updateSetting({ 'local.sortType': type })
+  }
+
+  /**
+   * 应用当前默认排序：读取本地列表 → 排序 → 覆盖持久化
+   */
+  const applySort = async() => {
+    const list = await getListMusics(LIST_IDS.LOCAL)
+    if (!list.length) return
+    await overwriteListMusics({
+      listId: LIST_IDS.LOCAL,
+      musicInfos: sortLocalList(list, sortType.value),
+    })
+    window.app_event.myListUpdate([LIST_IDS.LOCAL])
   }
 
   /**
@@ -79,8 +127,10 @@ export default () => {
         const fresh = list.filter(m => !existingIds.has(m.id))
         foundCount += fresh.length
         if (fresh.length) await addListMusics(LIST_IDS.LOCAL, fresh)
-        window.app_event.myListUpdate([LIST_IDS.LOCAL])
       }
+      // 追加后按当前默认排序重排（custom=保持追加顺序）
+      if (sortType.value != 'custom') await applySort()
+      else window.app_event.myListUpdate([LIST_IDS.LOCAL])
     } finally {
       isScanning.value = false
       scanProgress.value = ''
@@ -88,7 +138,7 @@ export default () => {
   }
 
   /**
-   * 重新扫描全部目录（覆盖本地列表）
+   * 重新扫描全部目录（覆盖本地列表），并按当前默认排序整理
    */
   const rescan = async() => {
     if (!dirs.value.length || isScanning.value) return
@@ -99,7 +149,7 @@ export default () => {
       }))
       await overwriteListMusics({
         listId: LIST_IDS.LOCAL,
-        musicInfos: list,
+        musicInfos: sortLocalList(list, sortType.value),
       })
       window.app_event.myListUpdate([LIST_IDS.LOCAL])
     } finally {
@@ -118,6 +168,16 @@ export default () => {
   }
 
   /**
+   * 切换默认排序（选择器回调）：持久化并立即应用
+   */
+  const onSortChange = async(type: LocalSortType) => {
+    if (sortType.value == type) return
+    setSortType(type)
+    if (type == 'custom') return
+    await applySort()
+  }
+
+  /**
    * 等待正在进行的扫描结束（500ms 轮询）
    */
   const waitScanIdle = async() => new Promise<void>(resolve => {
@@ -130,6 +190,8 @@ export default () => {
 
   return {
     dirs,
+    sortType,
+    LOCAL_SORT_OPTIONS,
     isScanning,
     scanProgress,
     isShowDirs,
@@ -138,5 +200,6 @@ export default () => {
     moveDir,
     rescan,
     init,
+    onSortChange,
   }
 }

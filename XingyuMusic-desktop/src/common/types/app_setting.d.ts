@@ -501,6 +501,11 @@ declare global {
       'local.dirs': string[]
 
       /**
+       * 本地音乐默认排序方式：old=由旧至新 / new=由新至旧 / az=A-Z / za=Z-A / custom=手动（自定义）
+       */
+      'local.sortType': 'old' | 'new' | 'az' | 'za' | 'custom'
+
+      /**
        * 是否启用下载功能
        */
       'download.enable': boolean

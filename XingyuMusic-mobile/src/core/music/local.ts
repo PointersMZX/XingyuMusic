@@ -1,6 +1,5 @@
 
 import { saveLyric, saveMusicUrl } from '@/utils/data'
-import { updateListMusics } from '@/core/list'
 import {
   buildLyricInfo,
   getCachedLyricInfo,
@@ -8,12 +7,10 @@ import {
   getOnlineOtherSourceLyricInfo,
   getOnlineOtherSourceMusicUrl,
   getOnlineOtherSourceMusicUrlByLocal,
-  getOnlineOtherSourcePicByLocal,
-  getOnlineOtherSourcePicUrl,
   getOtherSource,
 } from './utils'
 import { getLocalFilePath } from '@/utils/music'
-import { readLyric, readPic } from '@/utils/localMediaMetadata'
+import { readLyric } from '@/utils/localMediaMetadata'
 import { stat } from '@/utils/fs'
 
 const getOtherSourceByLocal = async<T>(musicInfo: LX.Music.MusicInfoLocal, handler: (infos: LX.Music.MusicInfoOnline[]) => Promise<T>) => {
@@ -99,40 +96,16 @@ export const getMusicUrl = async({ musicInfo, isRefresh, allowToggleSource = tru
   })
 }
 
-export const getPicUrl = async({ musicInfo, listId, isRefresh, skipFilePic, onToggleSource = () => {} }: {
+export const getPicUrl = async(args: {
   musicInfo: LX.Music.MusicInfoLocal
   listId?: string | null
   isRefresh: boolean
   skipFilePic?: boolean
   onToggleSource?: (musicInfo?: LX.Music.MusicInfoOnline) => void
 }): Promise<string> => {
-  if (!isRefresh && !skipFilePic) {
-    let pic = await readPic(musicInfo.meta.filePath).catch(() => null)
-    if (pic) {
-      if (pic.startsWith('/')) pic = `file://${pic}`
-      return pic
-    }
-
-    if (musicInfo.meta.picUrl) return musicInfo.meta.picUrl
-  }
-
-  try {
-    return await getOnlineOtherSourcePicByLocal(musicInfo).then(({ url }) => {
-      return url
-    })
-  } catch {}
-
-  onToggleSource()
-  return getOtherSourceByLocal(musicInfo, async(otherSource) => {
-    return getOnlineOtherSourcePicUrl({ musicInfos: [...otherSource], onToggleSource, isRefresh }).then(({ url, musicInfo: targetMusicInfo, isFromCache }) => {
-      if (listId) {
-        musicInfo.meta.picUrl = url
-        void updateListMusics([{ id: listId, musicInfo }])
-      }
-
-      return url
-    })
-  })
+  // v1.0.1：本地音乐不再加载专辑图（嵌入封面 / 在线匹配封面），封面统一走默认 Logo
+  void args
+  return ''
 }
 
 export const parseLyric = (lrc: string): LX.Music.LyricInfo => {

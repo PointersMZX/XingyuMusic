@@ -3,6 +3,8 @@ import type { I18n } from '@/lang/i18n'
 declare global {
   namespace LX {
     type AddMusicLocationType = 'top' | 'bottom'
+    /** 本地音乐默认排序：old=由旧至新 / new=由新至旧 / az=A-Z / za=Z-A / custom=手动 */
+    type LocalSortType = 'old' | 'new' | 'az' | 'za' | 'custom'
 
     interface AppSetting {
       version: string
@@ -345,6 +347,11 @@ declare global {
        * 添加歌曲到我的列表时的方式
        */
       'list.addMusicLocationType': AddMusicLocationType
+
+      /**
+       * 本地音乐默认排序方式
+       */
+      'local.sortType': LocalSortType
 
       /**
        * 文件命名方式

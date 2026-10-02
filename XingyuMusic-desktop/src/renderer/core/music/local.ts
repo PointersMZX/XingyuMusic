@@ -1,5 +1,4 @@
 import { encodePath } from '@common/utils/common'
-import { updateListMusics } from '@renderer/store/list/action'
 import { saveLyric, saveMusicUrl } from '@renderer/utils/ipc'
 import { getLocalFilePath } from '@renderer/utils/music'
 
@@ -10,8 +9,6 @@ import {
   getOnlineOtherSourceLyricInfo,
   getOnlineOtherSourceMusicUrl,
   getOnlineOtherSourceMusicUrlByLocal,
-  getOnlineOtherSourcePicByLocal,
-  getOnlineOtherSourcePicUrl,
   getOtherSource,
 } from './utils'
 
@@ -98,36 +95,15 @@ export const getMusicUrl = async({ musicInfo, isRefresh, allowToggleSource = tru
   })
 }
 
-export const getPicUrl = async({ musicInfo, listId, isRefresh, onToggleSource = () => {} }: {
+export const getPicUrl = async(args: {
   musicInfo: LX.Music.MusicInfoLocal
   listId?: string | null
   isRefresh: boolean
   onToggleSource?: (musicInfo?: LX.Music.MusicInfoOnline) => void
 }): Promise<string> => {
-  if (!isRefresh) {
-    const pic = await window.lx.worker.main.getMusicFilePic(musicInfo.meta.filePath)
-    if (pic) return pic
-
-    if (musicInfo.meta.picUrl) return musicInfo.meta.picUrl
-  }
-
-  try {
-    return await getOnlineOtherSourcePicByLocal(musicInfo).then(({ url }) => {
-      return url
-    })
-  } catch {}
-
-  onToggleSource()
-  return getOtherSourceByLocal(musicInfo, async(otherSource) => {
-    return getOnlineOtherSourcePicUrl({ musicInfos: [...otherSource], onToggleSource, isRefresh }).then(({ url, musicInfo: targetMusicInfo, isFromCache }) => {
-      if (listId) {
-        musicInfo.meta.picUrl = url
-        void updateListMusics([{ id: listId, musicInfo }])
-      }
-
-      return url
-    })
-  })
+  // v1.0.1：本地音乐不再加载专辑图（嵌入式封面 / 在线匹配封面），封面统一使用默认 Logo
+  void args
+  return ''
 }
 
 export const getLyricInfo = async({ musicInfo, isRefresh, onToggleSource = () => {} }: {

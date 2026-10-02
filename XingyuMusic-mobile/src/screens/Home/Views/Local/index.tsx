@@ -1,106 +1,169 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { View, TouchableOpacity, FlatList } from 'react-native'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { View, TouchableOpacity, FlatList, PanResponder } from 'react-native'
 
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
 import Loading from '@/components/common/Loading'
 import { useTheme } from '@/store/theme/hook'
 import { useI18n } from '@/lang'
-import { createStyle } from '@/utils/tools'
+import { createStyle, confirmDialog, toast } from '@/utils/tools'
 import { getLocalDirs } from '@/utils/data'
 import { getListMusics } from '@/utils/listManage'
 import playerState from '@/store/player/state'
 import { playList } from '@/core/player/player'
 import { useListFetching } from '@/store/list/hook'
+import { useSettingValue } from '@/store/setting/hook'
+import settingActions from '@/store/setting/action'
+import { removeListMusics, overwriteListMusics } from '@/core/list'
 import {
   addLocalDir,
   removeLocalDir,
   moveLocalDir,
   rescanLocalMusic,
   registerLocalMusic,
+  applyLocalSort,
   LOCAL_LIST_ID,
+  LOCAL_SORT_OPTIONS,
 } from './localAction'
 
-const LocalToolbar = ({ isShowDirs, onToggleDirs, onRefresh }: {
-  isShowDirs: boolean
-  onToggleDirs: () => void
-  onRefresh: () => void
-}) => {
-  const theme = useTheme()
-  const t = useI18n()
-  const fetching = useListFetching(LOCAL_LIST_ID)
-  return (
-    <View style={styles.toolbar}>
-      <Text style={styles.title} size={16} color={theme['c-font']}>{t('nav_local')}</Text>
-      {
-        fetching ? <Loading style={styles.loading} color={theme['c-primary-font']} /> : null
-      }
-      <View style={styles.toolbarBtns}>
-        <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={fetching} onPress={onRefresh}>
-          <Icon name="available_updates" size={18} color={fetching ? theme['c-400'] : theme['c-font']} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.iconBtn, { backgroundColor: isShowDirs ? theme['c-button-background'] : undefined }]} activeOpacity={0.6} onPress={onToggleDirs}>
-          <Icon name="menu" size={18} color={theme['c-font']} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  )
+const ROW_HEIGHT = 56
+
+// 排序选项 → i18n 键（字面量，保证类型可查）
+const SORT_I18N: Record<LX.LocalSortType, 'local_sort_new' | 'local_sort_old' | 'local_sort_az' | 'local_sort_za' | 'local_sort_custom'> = {
+  new: 'local_sort_new',
+  old: 'local_sort_old',
+  az: 'local_sort_az',
+  za: 'local_sort_za',
+  custom: 'local_sort_custom',
 }
 
-const DirRow = ({ index, total, path, onMoveUp, onMoveDown, onRemove, removeDisabled }: {
+type SongItem = LX.Music.MusicInfo
+
+// 三条横线（≡）拖动把手
+const DragHandle = ({ color }: { color: string }) => (
+  <View style={styles.handleBox}>
+    <View style={[styles.handleLine, { backgroundColor: color }]} />
+    <View style={[styles.handleLine, { backgroundColor: color }]} />
+    <View style={[styles.handleLine, { backgroundColor: color }]} />
+  </View>
+)
+
+const SongRow = memo(({ item, index, total, manage, selected, active, draggingId, dragOffset, onPlay, onLongPress, onToggle, onDragStart, onDragMove, onDragEnd, onDragOffset }: {
+  item: SongItem
   index: number
   total: number
-  path: string
-  onMoveUp: () => void
-  onMoveDown: () => void
-  onRemove: () => void
-  removeDisabled?: boolean
+  manage: boolean
+  selected: boolean
+  active: boolean
+  draggingId: string | null
+  dragOffset: number
+  onPlay: (index: number) => void
+  onLongPress: (id: string) => void
+  onToggle: (id: string) => void
+  onDragStart: (id: string) => void
+  onDragMove: (target: number) => void
+  onDragEnd: () => void
+  onDragOffset: (px: number) => void
 }) => {
   const theme = useTheme()
-  // SAF 目录 URI 只显示最后一段，完整路径做 title
-  const name = path.split('/').filter(Boolean).pop() ?? path
-  const iconBtnStyle = { ...styles.dirIconBtn, color: theme['c-font-label'] }
+  const indexRef = useRef(index)
+  indexRef.current = index
+  const anchorRef = useRef(index)
+
+  const pr = useMemo(() => PanResponder.create({
+    onMoveShouldSetPanResponder: () => true,
+    onPanResponderTerminationRequest: () => false,
+    onPanResponderGrant: () => {
+      anchorRef.current = indexRef.current
+      onDragStart(item.id)
+    },
+    onPanResponderMove: (_e, gs) => {
+      const dy = gs.dy
+      const rows = Math.round(dy / ROW_HEIGHT)
+      const target = Math.max(0, Math.min(total - 1, anchorRef.current + rows))
+      onDragMove(target)
+      onDragOffset(dy - rows * ROW_HEIGHT)
+    },
+    onPanResponderRelease: () => { onDragEnd() },
+    onPanResponderTerminate: () => { onDragEnd() },
+  }), [item.id, total, onDragStart, onDragMove, onDragEnd, onDragOffset])
+
+  const isDragging = draggingId == item.id
+
   return (
-    <View style={styles.dirRow}>
-      <Icon name="sd-card" size={14} color={theme['c-350']} style={styles.dirIcon} />
-      <Text style={styles.dirPath} numberOfLines={1} color={theme['c-font']}>{name}</Text>
-      <View style={styles.dirBtns}>
-        <TouchableOpacity style={iconBtnStyle} disabled={index == 0} onPress={onMoveUp}>
-          <Icon name="chevron-right" size={14} color={theme['c-400']} style={{ transform: [{ rotate: '-90deg' }] }} />
-        </TouchableOpacity>
-        <TouchableOpacity style={iconBtnStyle} disabled={index == total - 1} onPress={onMoveDown}>
-          <Icon name="chevron-right" size={14} color={theme['c-400']} style={{ transform: [{ rotate: '90deg' }] }} />
-        </TouchableOpacity>
-        <TouchableOpacity style={[iconBtnStyle, { opacity: removeDisabled ? 0.4 : 1 }]} disabled={removeDisabled} onPress={onRemove}>
-          <Icon name="remove" size={14} color={theme['c-500']} />
-        </TouchableOpacity>
-      </View>
+    <View
+      style={[
+        styles.row,
+        {
+          height: ROW_HEIGHT,
+          zIndex: isDragging ? 30 : 1,
+          transform: [{ translateY: isDragging ? dragOffset : 0 }],
+          ...(isDragging ? styles.rowDragging : {}),
+        },
+      ]}
+    >
+      {
+        manage ? (
+          <TouchableOpacity style={styles.box} activeOpacity={0.6} onPress={() => { onToggle(item.id) }}>
+            <Icon name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'} size={20} color={selected ? theme['c-primary-font'] : theme['c-500']} />
+          </TouchableOpacity>
+        ) : (
+          active ? <Icon style={styles.box} name="play-outline" size={14} color={theme['c-primary-font']} />
+            : <Text style={styles.num} color={theme['c-400']}>{index + 1}</Text>
+        )
+      }
+      <TouchableOpacity
+        style={styles.main}
+        activeOpacity={manage ? 0.5 : 0.8}
+        onPress={() => { manage ? onToggle(item.id) : onPlay(index) }}
+        onLongPress={() => { if (!manage) onLongPress(item.id) }}
+      >
+        <Text style={styles.name} numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{item.name}</Text>
+        <Text style={styles.duration} numberOfLines={1} color={theme['c-400']}>{item.interval ?? ''}</Text>
+      </TouchableOpacity>
+      {
+        manage ? (
+          <View style={styles.handle} {...pr.panHandlers}>
+            <DragHandle color={theme['c-400']} />
+          </View>
+        ) : null
+      }
     </View>
   )
-}
+})
 
 export default memo(() => {
   const theme = useTheme()
   const t = useI18n()
   const [dirs, setDirs] = useState<string[]>([])
-  const [songs, setSongs] = useState<LX.Music.MusicInfo[]>([])
+  const [songs, setSongs] = useState<SongItem[]>([])
   const [isShowDirs, setIsShowDirs] = useState(true)
   const isScanning = useRef(false)
 
-  const refreshSongs = () => {
-    void getListMusics(LOCAL_LIST_ID).then(list => {
-      setSongs([...list])
-    })
-  }
+  // 管理（复选）模式
+  const [isManage, setIsManage] = useState(false)
+  const [selected, setSelected] = useState<string[]>([])
+  const [showSort, setShowSort] = useState(false)
+  const sortType = useSettingValue('local.sortType')
 
-  const refreshDirs = () => {
+  // 拖拽排序
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const draggingIdRef = useRef<string | null>(null)
+  const songsRef = useRef<SongItem[]>([])
+  useEffect(() => { songsRef.current = songs }, [songs])
+
+  const refreshSongs = useCallback(() => {
+    void getListMusics(LOCAL_LIST_ID).then(list => { setSongs([...list]) })
+  }, [])
+
+  const refreshDirs = useCallback(() => {
     void getLocalDirs().then(setDirs)
-  }
+  }, [])
 
   useEffect(() => {
     refreshDirs()
     refreshSongs()
-    // 进页时注册本地列表到内存（播放链路依赖）
     void registerLocalMusic()
     const handleListUpdate = (ids: string[]) => {
       if (ids.includes(LOCAL_LIST_ID)) refreshSongs()
@@ -109,7 +172,7 @@ export default memo(() => {
     return () => {
       global.app_event.off('myListMusicUpdate', handleListUpdate)
     }
-  }, [])
+  }, [refreshDirs, refreshSongs])
 
   const handleRefresh = () => {
     if (isScanning.current || !dirs.length) return
@@ -121,14 +184,12 @@ export default memo(() => {
   }
 
   const handleAddDir = () => {
-    if (fetching) return
     void addLocalDir().then(isAdded => {
       if (isAdded) refreshDirs()
     })
   }
 
   const handleRemoveDir = (index: number) => {
-    if (fetching) return
     void removeLocalDir(index).then(() => {
       refreshDirs()
       refreshSongs()
@@ -136,9 +197,7 @@ export default memo(() => {
   }
 
   const handleMoveDir = (index: number, toIndex: number) => {
-    void moveLocalDir(index, toIndex).then(() => {
-      refreshDirs()
-    })
+    void moveLocalDir(index, toIndex).then(refreshDirs)
   }
 
   const handlePlay = (index: number) => {
@@ -150,19 +209,93 @@ export default memo(() => {
   const playIndex = isPlayList ? playInfo.playIndex : -1
   const fetching = useListFetching(LOCAL_LIST_ID)
 
-  const renderItem = ({ item, index }: { item: LX.Music.MusicInfo, index: number }) => {
-    const active = playIndex == index
+  // ---------- 管理（复选）模式 ----------
+  const enterManage = (id?: string) => {
+    setIsManage(true)
+    setSelected(id ? [id] : [])
+  }
+  const exitManage = () => {
+    setIsManage(false)
+    setSelected([])
+  }
+  const toggleSelect = useCallback((id: string) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(v => v != id) : [...prev, id])
+  }, [])
+
+  const handleDeleteSelected = () => {
+    if (!selected.length) return
+    void confirmDialog({
+      message: t('local_delete_confirm', { count: selected.length }),
+      confirmButtonText: t('local_delete'),
+    }).then(isOk => {
+      if (!isOk) return
+      const ids = [...selected]
+      void removeListMusics(LOCAL_LIST_ID, ids).then(() => {
+        setSelected([])
+        toast(t('local_scan_result', { count: ids.length }), 'short', 'top')
+        refreshSongs()
+      })
+    })
+  }
+
+  // ---------- 排序 ----------
+  const handleSortPick = (type: LX.LocalSortType) => {
+    setShowSort(false)
+    if (type == sortType) return
+    settingActions.updateSetting({ 'local.sortType': type })
+    void applyLocalSort(type).then(refreshSongs)
+  }
+
+  // ---------- 拖拽排序 ----------
+  const onDragStart = useCallback((id: string) => {
+    draggingIdRef.current = id
+    setDraggingId(id)
+  }, [])
+  const onDragOffset = useCallback((px: number) => { setDragOffset(px) }, [])
+  const onDragMove = useCallback((target: number) => {
+    setSongs(prev => {
+      const id = draggingIdRef.current
+      if (!id) return prev
+      const from = prev.findIndex(m => m.id == id)
+      if (from < 0) return prev
+      const clamped = Math.max(0, Math.min(prev.length - 1, target))
+      if (clamped == from) return prev
+      const arr = [...prev]
+      const [it] = arr.splice(from, 1)
+      arr.splice(clamped, 0, it)
+      return arr
+    })
+  }, [])
+  const onDragEnd = useCallback(() => {
+    if (draggingIdRef.current) {
+      void overwriteListMusics(LOCAL_LIST_ID, songsRef.current).then(() => {
+        settingActions.updateSetting({ 'local.sortType': 'custom' })
+      })
+    }
+    draggingIdRef.current = null
+    setDraggingId(null)
+    setDragOffset(0)
+  }, [])
+
+  const renderItem = ({ item, index }: { item: SongItem, index: number }) => {
     return (
-      <TouchableOpacity style={styles.songRow} activeOpacity={0.7} onPress={() => { handlePlay(index) }}>
-        {
-          active ? <Icon style={styles.songActiveIcon} name="play-outline" size={14} color={theme['c-primary-font']} /> : <Text style={styles.songNum} numberOfLines={1} color={theme['c-400']}>{index + 1}</Text>
-        }
-        <View style={styles.songInfo}>
-          <Text style={styles.songName} numberOfLines={1} color={active ? theme['c-primary-font'] : theme['c-font']}>{item.name}</Text>
-          <Text style={styles.songSinger} numberOfLines={1} color={theme['c-400']}>{[item.singer, item.meta?.albumName].filter(Boolean).join(' · ')}</Text>
-        </View>
-        { item.interval ? <Text style={styles.songTime} color={theme['c-400']}>{item.interval}</Text> : null }
-      </TouchableOpacity>
+      <SongRow
+        item={item}
+        index={index}
+        total={songs.length}
+        manage={isManage}
+        selected={selected.includes(item.id)}
+        active={playIndex == index}
+        draggingId={draggingId}
+        dragOffset={dragOffset}
+        onPlay={handlePlay}
+        onLongPress={enterManage}
+        onToggle={toggleSelect}
+        onDragStart={onDragStart}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
+        onDragOffset={onDragOffset}
+      />
     )
   }
 
@@ -182,12 +315,29 @@ export default memo(() => {
         )
       }
     </View>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ), [dirs.length, songs.length])
 
   return (
     <View style={styles.container}>
-      <LocalToolbar isShowDirs={isShowDirs} onToggleDirs={() => { setIsShowDirs(v => !v) }} onRefresh={handleRefresh} />
+      <View style={styles.toolbar}>
+        <Text style={styles.title} size={16} color={theme['c-font']}>{t('nav_local')}</Text>
+        { fetching ? <Loading style={styles.loading} color={theme['c-primary-font']} /> : null }
+        <View style={styles.toolbarBtns}>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={fetching} onPress={handleRefresh}>
+            <Icon name="available_updates" size={18} color={fetching ? theme['c-400'] : theme['c-font']} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length} onPress={() => { setShowSort(true) }}>
+            <Icon name="list-order" size={18} color={theme['c-font']} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length} onPress={() => { enterManage() }}>
+            <Icon name="dots-vertical" size={18} color={theme['c-font']} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.iconBtn, { backgroundColor: isShowDirs ? theme['c-button-background'] : undefined }]} activeOpacity={0.6} onPress={() => { setIsShowDirs(v => !v) }}>
+            <Icon name="menu" size={18} color={theme['c-font']} />
+          </TouchableOpacity>
+        </View>
+      </View>
       {
         isShowDirs ? (
           <View style={{ ...styles.dirsPanel, borderColor: theme['c-border-background'], backgroundColor: theme['c-main-background'] }}>
@@ -227,26 +377,88 @@ export default memo(() => {
           emptyContent
         )
       }
+      {
+        isManage ? (
+          <View style={{ ...styles.manageBar, backgroundColor: theme['c-main-background'], borderColor: theme['c-border-background'] }}>
+            <Text style={styles.manageHint} numberOfLines={1} color={theme['c-400']}>{t('local_manage_hint')}</Text>
+            <TouchableOpacity
+              style={[styles.manageBtn, { opacity: selected.length ? 1 : 0.4 }]}
+              activeOpacity={0.7}
+              disabled={!selected.length}
+              onPress={handleDeleteSelected}
+            >
+              <Icon name="remove" size={16} color={selected.length ? theme['c-550'] : theme['c-400']} />
+              <Text style={[styles.manageBtnText, { color: selected.length ? theme['c-550'] : theme['c-400'] }]}>{t('local_delete')}（{selected.length}）</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.manageBtn} activeOpacity={0.7} onPress={exitManage}>
+              <Text style={[styles.manageBtnText, { color: theme['c-primary-font'] }]}>{t('local_done')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null
+      }
+      {
+        showSort ? (
+          <View style={{ ...styles.sortMask, backgroundColor: theme['c-content-background'] }}>
+            <TouchableOpacity style={styles.sortMaskTouch} activeOpacity={1} onPress={() => { setShowSort(false) }} />
+            <View style={[styles.sortPanel, { backgroundColor: theme['c-main-background'], borderColor: theme['c-border-background'] }]}>
+              <Text style={styles.sortTitle} color={theme['c-font']}>{t('local_sort')}</Text>
+              {
+                LOCAL_SORT_OPTIONS.map(opt => (
+                  <TouchableOpacity key={opt} style={styles.sortOption} activeOpacity={0.7} onPress={() => { handleSortPick(opt) }}>
+                    <Text style={styles.sortOptionText} color={opt == sortType ? theme['c-primary-font'] : theme['c-font']}>{t(SORT_I18N[opt])}</Text>
+                    { opt == sortType ? <Icon name="checkbox-marked" size={16} color={theme['c-primary-font']} /> : null }
+                  </TouchableOpacity>
+                ))
+              }
+            </View>
+          </View>
+        ) : null
+      }
     </View>
   )
 })
 
+const DirRow = ({ index, total, path, onMoveUp, onMoveDown, onRemove, removeDisabled }: {
+  index: number
+  total: number
+  path: string
+  onMoveUp: () => void
+  onMoveDown: () => void
+  onRemove: () => void
+  removeDisabled?: boolean
+}) => {
+  const theme = useTheme()
+  const name = path.split('/').filter(Boolean).pop() ?? path
+  const iconBtnStyle = { ...styles.dirIconBtn, color: theme['c-font-label'] }
+  return (
+    <View style={styles.dirRow}>
+      <Icon name="sd-card" size={14} color={theme['c-350']} style={styles.dirIcon} />
+      <Text style={styles.dirPath} numberOfLines={1} color={theme['c-font']}>{name}</Text>
+      <View style={styles.dirBtns}>
+        <TouchableOpacity style={iconBtnStyle} disabled={index == 0} onPress={onMoveUp}>
+          <Icon name="chevron-right" size={14} color={theme['c-400']} style={{ transform: [{ rotate: '-90deg' }] }} />
+        </TouchableOpacity>
+        <TouchableOpacity style={iconBtnStyle} disabled={index == total - 1} onPress={onMoveDown}>
+          <Icon name="chevron-right" size={14} color={theme['c-400']} style={{ transform: [{ rotate: '90deg' }] }} />
+        </TouchableOpacity>
+        <TouchableOpacity style={[iconBtnStyle, { opacity: removeDisabled ? 0.4 : 1 }]} disabled={removeDisabled} onPress={onRemove}>
+          <Icon name="remove" size={14} color={theme['c-500']} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
+}
+
 const styles = createStyle({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 12,
   },
-  title: {
-    flex: 1,
-  },
-  loading: {
-    marginRight: 8,
-  },
+  title: { flex: 1 },
+  loading: { marginRight: 8 },
   toolbarBtns: {
     flexDirection: 'row',
     gap: 8,
@@ -264,23 +476,15 @@ const styles = createStyle({
     borderRadius: 12,
     borderWidth: 1,
   },
-  dirsTitle: {
-    fontSize: 12,
-    marginBottom: 6,
-  },
+  dirsTitle: { fontSize: 12, marginBottom: 6 },
   dirRow: {
     flexDirection: 'row',
     alignItems: 'center',
     minHeight: 34,
     gap: 6,
   },
-  dirIcon: {
-    width: 16,
-  },
-  dirPath: {
-    flex: 1,
-    fontSize: 13,
-  },
+  dirIcon: { width: 16 },
+  dirPath: { flex: 1, fontSize: 13 },
   dirBtns: {
     flexDirection: 'row',
     gap: 2,
@@ -299,52 +503,104 @@ const styles = createStyle({
     marginTop: 4,
     paddingVertical: 4,
   },
-  addDirRowText: {
-    fontSize: 13,
-  },
-  dirTip: {
-    fontSize: 11,
-    marginTop: 4,
-  },
-  songRow: {
+  addDirRowText: { fontSize: 13 },
+  dirTip: { fontSize: 11, marginTop: 4 },
+
+  // 歌曲行
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 54,
     paddingHorizontal: 12,
-    gap: 10,
   },
-  songNum: {
-    width: 20,
+  rowDragging: {
+    backgroundColor: 'rgba(124, 32, 194, 0.18)',
+    borderRadius: 8,
+    marginVertical: 2,
+  },
+  box: {
+    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  num: {
+    width: 40,
     textAlign: 'center',
     fontSize: 13,
   },
-  songActiveIcon: {
-    width: 20,
-    textAlign: 'center',
-  },
-  songInfo: {
+  main: {
     flex: 1,
+    gap: 2,
+    paddingVertical: 4,
   },
-  songName: {
-    fontSize: 14,
+  name: { fontSize: 14 },
+  duration: { fontSize: 12 },
+  handle: {
+    width: 34,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  songSinger: {
-    fontSize: 12,
-    marginTop: 2,
+  handleBox: {
+    gap: 4,
+    paddingVertical: 6,
   },
-  songTime: {
-    fontSize: 12,
+  handleLine: {
+    width: 18,
+    height: 2,
+    borderRadius: 1,
   },
+
+  // 管理条
+  manageBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 10,
+    borderTopWidth: 1,
+  },
+  manageHint: { flex: 1, fontSize: 11 },
+  manageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  manageBtnText: { fontSize: 14 },
+
+  // 排序面板
+  sortMask: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-end',
+  },
+  sortMaskTouch: { flex: 1 },
+  sortPanel: {
+    borderRadius: 16,
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    borderWidth: 1,
+    padding: 14,
+    gap: 2,
+  },
+  sortTitle: { fontSize: 15, fontWeight: '600', marginBottom: 4 },
+  sortOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  sortOptionText: { fontSize: 15 },
+
   empty: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
-  emptyText: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
+  emptyText: { fontSize: 14, textAlign: 'center' },
   addDirBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -355,7 +611,5 @@ const styles = createStyle({
     borderRadius: 20,
     borderWidth: 1,
   },
-  addDirText: {
-    fontSize: 14,
-  },
+  addDirText: { fontSize: 14 },
 })

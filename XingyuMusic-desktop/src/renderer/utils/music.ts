@@ -56,41 +56,42 @@ export const getMusicFilePath = async(musicInfo: LX.Music.MusicInfo | LX.Downloa
 
 /**
  * 创建本地音乐信息对象
+ * v1.0.1：只取「文件名 + 时长 + 文件修改时间（用于按新旧排序）」，
+ * 不再解析标签（专辑/歌手/歌名），也不再加载专辑图（封面统一走默认 Logo）。
  * @param path 文件路径
  * @returns
  */
 export const createLocalMusicInfo = async(path: string): Promise<LX.Music.MusicInfoLocal | null> => {
   if (!await checkPath(path)) return null
-  const { parseFile } = await import('music-metadata')
 
-  let metadata
+  const ext = extname(path)
+  const name = basename(path, ext)
+  const stats = await getFileStats(path)
+  const mtime = stats?.mtimeMs ?? 0
+
+  // 仅取文件头时长（跳过标签/封面解析的展示逻辑在调用侧实现；读不到时长时留空）
+  let interval = ''
   try {
-    metadata = await parseFile(path)
-  } catch (err) {
-    console.log(err)
-    return null
+    const { parseFile } = await import('music-metadata')
+    const metadata = await parseFile(path)
+    if (metadata.format.duration) interval = formatPlayTime(metadata.format.duration)
+  } catch {
+    // 无时长时留空
   }
-
-  // console.log(metadata)
-  let ext = extname(path)
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-  let name = (metadata.common.title || basename(path, ext)).trim()
-  let singer = metadata.common.artists?.length ? metadata.common.artists.map(a => a.trim()).join('、') : ''
-  let interval = metadata.format.duration ? formatPlayTime(metadata.format.duration) : ''
-  let albumName = metadata.common.album?.trim() ?? ''
 
   return {
     id: path,
     name,
-    singer,
+    singer: '',
     source: 'local',
     interval,
     meta: {
-      albumName,
+      albumName: '',
       filePath: path,
       songId: path,
       picUrl: '',
       ext: ext.replace(/^\./, ''),
+      mtime,
     },
   }
 }

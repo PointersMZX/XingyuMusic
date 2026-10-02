@@ -6,6 +6,12 @@
         <span v-if="scanProgress" :class="$style.progress" :aria-label="scanProgress">{{ scanProgress }}</span>
       </div>
       <div :class="$style.btns">
+        <div :class="$style.sortControl">
+          <span :class="$style.sortLabel">{{ $t('local_sort') }}</span>
+          <select :class="$style.sortSelect" :value="sortType" @change="handleSortSelect">
+            <option v-for="opt in LOCAL_SORT_OPTIONS" :key="opt" :value="opt">{{ $t('local_sort_' + opt) }}</option>
+          </select>
+        </div>
         <base-btn min @click="addDir">{{ $t('local_add_dir') }}</base-btn>
         <base-btn min :disabled="isScanning || !dirs.length" @click="rescan">{{ $t('local_refresh') }}</base-btn>
         <base-btn min :outline="!isShowDirs" @click="isShowDirs = !isShowDirs">{{ $t('local_dirs') }}</base-btn>
@@ -59,6 +65,8 @@ export default {
   setup() {
     const {
       dirs,
+      sortType,
+      LOCAL_SORT_OPTIONS,
       isScanning,
       scanProgress,
       isShowDirs,
@@ -67,7 +75,12 @@ export default {
       moveDir,
       rescan,
       init,
+      onSortChange,
     } = useLocal()
+
+    const handleSortSelect = (e) => {
+      void onSortChange(e.target.value)
+    }
 
     onMounted(() => {
       void init()
@@ -76,6 +89,9 @@ export default {
     return {
       LIST_IDS,
       dirs,
+      sortType,
+      LOCAL_SORT_OPTIONS,
+      handleSortSelect,
       isScanning,
       scanProgress,
       isShowDirs,
@@ -135,6 +151,43 @@ export default {
   flex-flow: row nowrap;
   gap: 6px;
   flex: none;
+  align-items: center;
+}
+
+.sortControl {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+}
+
+.sortLabel {
+  font-size: 12px;
+  color: var(--color-font-label);
+}
+
+.sortSelect {
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border-background, var(--color-primary-alpha-300));
+  border-radius: 8px;
+  background-color: var(--color-button-background);
+  color: var(--color-font);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s ease;
+
+  &:hover,
+  &:focus {
+    border-color: var(--color-primary);
+  }
+
+  option {
+    background-color: var(--color-main-background, #1a1a2e);
+    color: var(--color-font);
+  }
 }
 
 .dirs {
