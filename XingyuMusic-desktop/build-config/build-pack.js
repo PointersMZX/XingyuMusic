@@ -24,6 +24,8 @@ const options = {
     buildResources: './resources',
     output: './build',
   },
+  // 离线打包：设置 ELECTRON_DIST 环境变量可指向本地 electron dist（win7/普通版切换），避免 electron-builder 联网下载
+  ...(process.env.ELECTRON_DIST ? { electronDist: process.env.ELECTRON_DIST } : {}),
   files: [
     '!node_modules/**/*',
     'node_modules/font-list',

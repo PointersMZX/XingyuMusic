@@ -10,6 +10,7 @@
             <th v-if="!isLocal" class="nobreak" style="width: 22%;">{{ $t('music_album') }}</th>
             <th class="nobreak" style="width: 9%;">{{ $t('music_time') }}</th>
             <th class="nobreak" style="width: 16%;">{{ $t('action') }}</th>
+            <th v-if="isLocal" class="nobreak" style="width: 5%;"></th>
           </tr>
           <tr v-else>
             <th class="num" style="width: 7%;">#</th>
@@ -17,6 +18,7 @@
             <th v-if="!isLocal" class="nobreak" style="width: 25%;">{{ $t('music_singer') }}</th>
             <th v-if="!isLocal" class="nobreak" style="width: 28%;">{{ $t('music_album') }}</th>
             <th class="nobreak" style="width: 10%;">{{ $t('music_time') }}</th>
+            <th v-if="isLocal" class="nobreak" style="width: 5%;"></th>
           </tr>
         </thead>
       </table>
@@ -28,7 +30,7 @@
         @scroll="saveListPosition" @contextmenu.capture="handleListRightClick"
       >
         <div
-          class="list-item" :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
+          class="list-item" :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
@@ -51,6 +53,17 @@
           <div class="list-item-cell" style="flex: 0 0 16%; padding-left: 0; padding-right: 0;">
             <material-list-buttons :index="index" :download-btn="assertApiSupport(item.source) && item.source != 'local'" @btn-click="handleListBtnClick" />
           </div>
+          <div
+            v-if="isLocal"
+            class="list-item-cell no-select" :class="[$style.dragHandle, { [$style.dragging]: dragId == item.id }]" style="flex: 0 0 5%;"
+            :title="isDragging ? '' : '拖动调整顺序'" @mousedown="startDrag(index, item, $event)"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="3" width="12" height="1.6" rx="0.8" fill="currentColor" />
+              <rect x="2" y="7.2" width="12" height="1.6" rx="0.8" fill="currentColor" />
+              <rect x="2" y="11.4" width="12" height="1.6" rx="0.8" fill="currentColor" />
+            </svg>
+          </div>
         </div>
       </base-virtualized-list>
       <base-virtualized-list
@@ -60,7 +73,7 @@
       >
         <div
           class="list-item"
-          :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }]"
+          :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
@@ -80,6 +93,17 @@
           <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 25%;"><span class="select" :aria-label="item.singer">{{ item.singer }}</span></div>
           <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 28%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 10%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
+          <div
+            v-if="isLocal"
+            class="list-item-cell no-select" :class="[$style.dragHandle, { [$style.dragging]: dragId == item.id }]" style="flex: 0 0 5%;"
+            :title="isDragging ? '' : '拖动调整顺序'" @mousedown="startDrag(index, item, $event)"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="3" width="12" height="1.6" rx="0.8" fill="currentColor" />
+              <rect x="2" y="7.2" width="12" height="1.6" rx="0.8" fill="currentColor" />
+              <rect x="2" y="11.4" width="12" height="1.6" rx="0.8" fill="currentColor" />
+            </svg>
+          </div>
         </div>
       </base-virtualized-list>
     </div>
@@ -121,6 +145,7 @@ import useMusicActions from './useMusicActions'
 import useSearch from './useSearch'
 import useListScroll from './useListScroll'
 import useMusicToggle from './useMusicToggle'
+import useDragReorder from './useDragReorder'
 import { appSetting } from '@renderer/store/setting'
 export default {
   name: 'MusicList',
@@ -255,6 +280,13 @@ export default {
 
     const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll })
 
+    const {
+      dragId,
+      dragIndex,
+      isDragging,
+      startDrag,
+    } = useDragReorder({ props, list, listItemHeight })
+
 
     const handleListItemClick = (event, index) => {
       if (rightClickSelectedIndex.value > -1) return
@@ -355,6 +387,11 @@ export default {
       actionButtonsVisible,
       isLocal,
 
+      dragId,
+      dragIndex,
+      isDragging,
+      startDrag,
+
       isShowMusicToggleModal,
       selectedToggleMusicInfo,
       toggleSource,
@@ -396,6 +433,37 @@ export default {
   align-items: center;
   justify-content: center;
   position: relative;
+}
+.dragHandle {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-font-label);
+  opacity: .45;
+  cursor: grab;
+  user-select: none;
+  transition: opacity .15s ease;
+
+  svg {
+    flex: none;
+  }
+  &:hover {
+    opacity: .9;
+  }
+}
+.dragging {
+  opacity: 1;
+  cursor: grabbing;
+  color: var(--color-primary);
+}
+.ghostRow {
+  opacity: .5;
+  background-color: var(--color-primary-background-hover);
+}
+.dropRow {
+  box-shadow: inset 0 2px 0 var(--color-primary), inset 0 -2px 0 var(--color-primary);
+  background-color: var(--color-primary-background-hover);
 }
 .playIcon {
   position: absolute;

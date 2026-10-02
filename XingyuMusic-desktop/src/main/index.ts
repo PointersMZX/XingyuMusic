@@ -1,3 +1,4 @@
+import './utils/node16polyfill'
 import { app } from 'electron'
 import './utils/logInit'
 import '@common/error'
