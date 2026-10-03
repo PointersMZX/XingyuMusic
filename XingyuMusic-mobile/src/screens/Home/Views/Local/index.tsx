@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { View, TouchableOpacity, FlatList, PanResponder } from 'react-native'
+import { View, TouchableOpacity, FlatList, PanResponder, TextInput } from 'react-native'
 
 import { Icon } from '@/components/common/Icon'
 import Text from '@/components/common/Text'
@@ -153,6 +153,23 @@ export default memo(() => {
   const songsRef = useRef<SongItem[]>([])
   useEffect(() => { songsRef.current = songs }, [songs])
 
+  // 列表内搜索：按歌名实时过滤。未搜索时 displaySongs 与 songs 同引用、resolveFullIndex 为恒等，其它逻辑零影响
+  const [searchText, setSearchText] = useState('')
+  const [isShowSearch, setIsShowSearch] = useState(false)
+  const isSearching = searchText.trim() != ''
+  const displaySongs = useMemo(() => {
+    if (!isSearching) return songs
+    const q = searchText.trim().toLowerCase()
+    return songs.filter(m => m.name.toLowerCase().includes(q))
+  }, [songs, isSearching, searchText])
+  const resolveFullIndex = (displayIndex: number) => {
+    if (!isSearching) return displayIndex
+    const id = displaySongs[displayIndex]?.id
+    if (!id) return 0
+    const full = songs.findIndex(m => m.id == id)
+    return full < 0 ? 0 : full
+  }
+
   const refreshSongs = useCallback(() => {
     void getListMusics(LOCAL_LIST_ID).then(list => { setSongs([...list]) })
   }, [])
@@ -200,14 +217,22 @@ export default memo(() => {
     void moveLocalDir(index, toIndex).then(refreshDirs)
   }
 
-  const handlePlay = (index: number) => {
-    void playList(LOCAL_LIST_ID, index)
+  const handlePlay = (displayIndex: number) => {
+    void playList(LOCAL_LIST_ID, resolveFullIndex(displayIndex))
   }
 
   const { playMusicInfo, playInfo } = playerState
   const isPlayList = playMusicInfo.listId == LOCAL_LIST_ID
   const playIndex = isPlayList ? playInfo.playIndex : -1
+  // 当前正在播放的歌（按 id 匹配，搜索过滤后仍正确高亮）
+  const activeId = isPlayList ? songs[playIndex]?.id : undefined
   const fetching = useListFetching(LOCAL_LIST_ID)
+
+  // 搜索输入：改词时退出管理模式（避免管理态 + 过滤态并存）
+  const handleSearchChange = (val: string) => {
+    setSearchText(val)
+    if (isManage) exitManage()
+  }
 
   // ---------- 管理（复选）模式 ----------
   const enterManage = (id?: string) => {
@@ -282,14 +307,14 @@ export default memo(() => {
       <SongRow
         item={item}
         index={index}
-        total={songs.length}
-        manage={isManage}
+        total={displaySongs.length}
+        manage={isManage && !isSearching}
         selected={selected.includes(item.id)}
-        active={playIndex == index}
+        active={activeId != null && item.id == activeId}
         draggingId={draggingId}
         dragOffset={dragOffset}
         onPlay={handlePlay}
-        onLongPress={enterManage}
+        onLongPress={isSearching ? () => { } : enterManage}
         onToggle={toggleSelect}
         onDragStart={onDragStart}
         onDragMove={onDragMove}
@@ -327,17 +352,42 @@ export default memo(() => {
           <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={fetching} onPress={handleRefresh}>
             <Icon name="available_updates" size={18} color={fetching ? theme['c-400'] : theme['c-font']} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length} onPress={() => { setShowSort(true) }}>
-            <Icon name="list-order" size={18} color={theme['c-font']} />
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length || isSearching} onPress={() => { setShowSort(true) }}>
+            <Icon name="list-order" size={18} color={!songs.length || isSearching ? theme['c-400'] : theme['c-font']} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length} onPress={() => { enterManage() }}>
-            <Icon name="dots-vertical" size={18} color={theme['c-font']} />
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.6} disabled={!songs.length || isSearching} onPress={() => { enterManage() }}>
+            <Icon name="dots-vertical" size={18} color={!songs.length || isSearching ? theme['c-400'] : theme['c-font']} />
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.iconBtn, { backgroundColor: isShowSearch ? theme['c-button-background'] : undefined }]} activeOpacity={0.6} disabled={!songs.length} onPress={() => { setIsShowSearch(v => !v) }}>
+            <Icon name="search-2" size={18} color={theme['c-font']} />
           </TouchableOpacity>
           <TouchableOpacity style={[styles.iconBtn, { backgroundColor: isShowDirs ? theme['c-button-background'] : undefined }]} activeOpacity={0.6} onPress={() => { setIsShowDirs(v => !v) }}>
             <Icon name="menu" size={18} color={theme['c-font']} />
           </TouchableOpacity>
         </View>
       </View>
+      {
+        isShowSearch ? (
+          <View style={{ ...styles.searchBar, backgroundColor: theme['c-main-background'], borderColor: theme['c-border-background'] }}>
+            <Icon name="search-2" size={16} color={theme['c-400']} style={styles.searchIcon} />
+            <TextInput
+              style={[styles.searchInput, { color: theme['c-font'] }]}
+              placeholder={t('local_search_placeholder')}
+              placeholderTextColor={theme['c-400']}
+              value={searchText}
+              onChangeText={handleSearchChange}
+              autoCorrect={false}
+            />
+            {
+              searchText ? (
+                <TouchableOpacity style={styles.searchClearBtn} activeOpacity={0.6} onPress={() => { setSearchText(''); if (isManage) exitManage() }}>
+                  <Icon name="close" size={16} color={theme['c-400']} />
+                </TouchableOpacity>
+              ) : null
+            }
+          </View>
+        ) : null
+      }
       {
         isShowDirs ? (
           <View style={{ ...styles.dirsPanel, borderColor: theme['c-border-background'], backgroundColor: theme['c-main-background'] }}>
@@ -366,13 +416,19 @@ export default memo(() => {
       }
       {
         songs.length ? (
-          <FlatList
-            data={songs}
-            keyExtractor={item => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            showsVerticalScrollIndicator={false}
-          />
+          isSearching && !displaySongs.length ? (
+            <View style={styles.searchEmpty}>
+              <Text style={styles.searchEmptyText} color={theme['c-400']}>{t('local_search_empty')}</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={displaySongs}
+              keyExtractor={item => item.id}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              showsVerticalScrollIndicator={false}
+            />
+          )
         ) : (
           emptyContent
         )
@@ -612,4 +668,37 @@ const styles = createStyle({
     borderWidth: 1,
   },
   addDirText: { fontSize: 14 },
+
+  // 搜索
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 12,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  searchIcon: { width: 18 },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    padding: 0,
+    height: 22,
+  },
+  searchClearBtn: {
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchEmpty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  searchEmptyText: { fontSize: 14, textAlign: 'center' },
 })

@@ -46,7 +46,7 @@
       </template>
     </div>
     <div :class="$style.content">
-      <music-list :list-id="LIST_IDS.LOCAL" />
+      <music-list :list-id="LIST_IDS.LOCAL" :searchable="true" />
     </div>
   </div>
 </template>

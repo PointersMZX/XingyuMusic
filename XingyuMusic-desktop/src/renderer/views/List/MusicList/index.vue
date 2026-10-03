@@ -24,18 +24,32 @@
       </table>
     </div>
     <div v-show="list.length" ref="dom_listContent" :class="$style.content">
+      <div v-if="searchable" :class="$style.searchBar">
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="14" viewBox="0 0 1024 1024" space="preserve">
+          <use xlink:href="#icon-search" />
+        </svg>
+        <input
+          v-model="searchText" :class="$style.searchInput" type="text"
+          :placeholder="$t('local_search_placeholder')" @keyup.esc="clearSearch"
+        />
+        <button v-show="searchText" class="no-select" type="button" :class="$style.searchClear" :title="$t('local_search_clear')" @click="clearSearch">
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="12" viewBox="0 0 1024 1024" space="preserve">
+            <use xlink:href="#icon-close" />
+          </svg>
+        </button>
+      </div>
       <base-virtualized-list
-        v-if="actionButtonsVisible" ref="listRef" v-slot="{ item, index }" :list="list" key-name="id"
+        v-if="actionButtonsVisible" ref="listRef" v-slot="{ item, index }" :list="displayList" key-name="id"
         :item-height="listItemHeight" container-class="scroll" content-class="list"
         @scroll="saveListPosition" @contextmenu.capture="handleListRightClick"
       >
         <div
-          class="list-item" :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
+          class="list-item" :class="[{ [$style.active]: activeItem && activeItem.id == item.id }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
             <transition name="play-active">
-              <div v-if="playerInfo.isPlayList && playerInfo.playIndex === index" :class="$style.playIcon">
+              <div v-if="activeItem?.id == item.id" :class="$style.playIcon">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 512 512" space="preserve">
                   <use xlink:href="#icon-play-outline" />
                 </svg>
@@ -54,7 +68,7 @@
             <material-list-buttons :index="index" :download-btn="assertApiSupport(item.source) && item.source != 'local'" @btn-click="handleListBtnClick" />
           </div>
           <div
-            v-if="isLocal"
+            v-if="isLocal && !isSearching"
             class="list-item-cell no-select" :class="[$style.dragHandle, { [$style.dragging]: dragId == item.id }]" style="flex: 0 0 5%;"
             :title="isDragging ? '' : '拖动调整顺序'" @mousedown="startDrag(index, item, $event)"
           >
@@ -67,18 +81,18 @@
         </div>
       </base-virtualized-list>
       <base-virtualized-list
-        v-else ref="listRef" v-slot="{ item, index }" :list="list" key-name="id"
+        v-else ref="listRef" v-slot="{ item, index }" :list="displayList" key-name="id"
         :item-height="listItemHeight" container-class="scroll" content-class="list"
         @scroll="saveListPosition" @contextmenu.capture="handleListRightClick"
       >
         <div
           class="list-item"
-          :class="[{ [$style.active]: playerInfo.isPlayList && playerInfo.playIndex === index }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
+          :class="[{ [$style.active]: activeItem?.id == item.id }, { selected: selectedIndex == index || rightClickSelectedIndex == index }, { active: selectedList.includes(item) }, { disabled: !assertApiSupport(item.source) }, { [$style.ghostRow]: isLocal && dragId == item.id }, { [$style.dropRow]: isLocal && isDragging && dragIndex == index && dragId != item.id }]"
           @click="handleListItemClick($event, index)" @contextmenu="handleListItemRightClick($event, index)"
         >
           <div class="list-item-cell no-select" :class="$style.num" style="flex: 0 0 7%;">
             <transition name="play-active">
-              <div v-if="playerInfo.isPlayList && playerInfo.playIndex === index" :class="$style.playIcon">
+              <div v-if="activeItem?.id == item.id" :class="$style.playIcon">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="50%" viewBox="0 0 512 512" space="preserve">
                   <use xlink:href="#icon-play-outline" />
                 </svg>
@@ -94,7 +108,7 @@
           <div v-if="!isLocal" class="list-item-cell" style="flex: 0 0 28%;"><span class="select" :aria-label="item.meta.albumName">{{ item.meta.albumName }}</span></div>
           <div class="list-item-cell" style="flex: 0 0 10%;"><span class="no-select">{{ item.interval || '--/--' }}</span></div>
           <div
-            v-if="isLocal"
+            v-if="isLocal && !isSearching"
             class="list-item-cell no-select" :class="[$style.dragHandle, { [$style.dragging]: dragId == item.id }]" style="flex: 0 0 5%;"
             :title="isDragging ? '' : '拖动调整顺序'" @mousedown="startDrag(index, item, $event)"
           >
@@ -106,6 +120,9 @@
           </div>
         </div>
       </base-virtualized-list>
+      <div v-if="isSearching && !displayList.length" :class="$style.searchEmpty">
+        {{ $t('local_search_empty') }}
+      </div>
     </div>
     <div v-show="!list.length" :class="$style.noItem">
       <p v-text="$t('no_item')" />
@@ -129,6 +146,7 @@
 
 <script>
 import { clipboardWriteText } from '@common/utils/electron'
+import { ref, computed } from '@common/utils/vueTools'
 import { LIST_IDS } from '@common/constants'
 import { assertApiSupport } from '@renderer/store/utils'
 import SearchList from './components/SearchList.vue'
@@ -158,6 +176,11 @@ export default {
     listId: {
       type: String,
       required: true,
+    },
+    // 是否启用「列表内搜索」（本地音乐页传 true）：按歌名实时过滤显示
+    searchable: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['show-menu'],
@@ -191,18 +214,35 @@ export default {
       excludeListIds,
     } = useListInfo({ props, onLoadedList })
 
+    // 列表内搜索（searchable，如本地音乐）：按歌名实时过滤显示。
+    // 未搜索时 displayList 直接返回 list（同一引用），resolveFullIndex(i)===i，其它列表页零影响。
+    const searchText = ref('')
+    const isSearching = computed(() => props.searchable && searchText.value.trim() != '')
+    const displayList = computed(() => {
+      if (!isSearching.value) return list.value
+      const q = searchText.value.trim().toLowerCase()
+      return list.value.filter(m => m.name.toLowerCase().includes(q))
+    })
+    const resolveFullIndex = (displayIndex) => {
+      if (!isSearching.value) return displayIndex
+      return list.value.findIndex(m => m.id == displayList.value[displayIndex]?.id)
+    }
+    // 当前正在播放的歌（按 id 匹配，搜索过滤后仍正确高亮）
+    const activeItem = computed(() => (playerInfo.isPlayList ? list.value[playerInfo.playIndex] : null))
+    const clearSearch = () => { searchText.value = '' }
+
     const {
       selectedList,
       listItemHeight,
       handleSelectData,
       removeAllSelect,
-    } = useList({ listRef, list })
+    } = useList({ listRef, list: displayList })
 
     const {
       handlePlayMusic,
       handlePlayMusicLater,
       doubleClickPlay,
-    } = usePlay({ props, selectedList, list, removeAllSelect })
+    } = usePlay({ props, selectedList, list: displayList, resolveFullIndex, removeAllSelect })
 
     const {
       isShowListAdd,
@@ -212,14 +252,14 @@ export default {
       selectedAddMusicInfo,
       handleShowMusicAddModal,
       handleShowMusicMoveModal,
-    } = useMusicAdd({ selectedList, list })
+    } = useMusicAdd({ selectedList, list: displayList })
 
     const {
       isShowDownload,
       isShowDownloadMultiple,
       selectedDownloadMusicInfo,
       handleShowDownloadModal,
-    } = useMusicDownload({ selectedList, list })
+    } = useMusicDownload({ selectedList, list: displayList })
 
     const {
       isShowMusicSortModal,
@@ -227,14 +267,14 @@ export default {
       selectedSortMusicInfo,
       handleShowSortModal,
       sortMusic,
-    } = useSort({ props, list, selectedList, removeAllSelect })
+    } = useSort({ props, list: displayList, selectedList, removeAllSelect })
 
     const {
       handleShowMusicToggleModal,
       isShowMusicToggleModal,
       selectedToggleMusicInfo,
       toggleSource,
-    } = useMusicToggle(props, list)
+    } = useMusicToggle(props, displayList)
 
     const {
       handleSearch,
@@ -242,7 +282,7 @@ export default {
       handleCopyName,
       handleDislikeMusic,
       handleRemoveMusic,
-    } = useMusicActions({ props, list, removeAllSelect, selectedList })
+    } = useMusicActions({ props, list: displayList, removeAllSelect, selectedList })
 
     const {
       menus,
@@ -278,7 +318,7 @@ export default {
       listRef,
     })
 
-    const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list, handleRestoreScroll })
+    const { saveListPosition, restoreScroll } = useListScroll({ props, listRef, list: displayList, handleRestoreScroll })
 
     const {
       dragId,
@@ -295,7 +335,7 @@ export default {
     }
     const handleListItemRightClick = (event, index) => {
       rightClickSelectedIndex.value = index
-      showMenu(event, list.value[index], index)
+      showMenu(event, displayList.value[index], index)
     }
     const handleMenuClick = (action) => {
       let index = rightClickSelectedIndex.value
@@ -386,6 +426,12 @@ export default {
 
       actionButtonsVisible,
       isLocal,
+
+      searchText,
+      isSearching,
+      displayList,
+      activeItem,
+      clearSearch,
 
       dragId,
       dragIndex,
@@ -498,6 +544,68 @@ export default {
     font-size: 24px;
     color: var(--color-font-label);
   }
+}
+
+.searchBar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+
+  > svg {
+    flex: none;
+    color: var(--color-button-font);
+    opacity: .7;
+  }
+}
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 13.5px;
+  color: var(--color-font);
+  background-color: var(--color-primary-light-300-alpha-700);
+  border: none;
+  border-radius: @form-radius;
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-button-font);
+    font-size: .98em;
+  }
+}
+.searchClear {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--color-button-font);
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color .2s ease;
+
+  &:hover {
+    background-color: var(--color-button-background-hover);
+  }
+  &:active {
+    background-color: var(--color-button-background-active);
+  }
+}
+.searchEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  font-size: 14px;
+  color: var(--color-font-label);
 }
 
 </style>

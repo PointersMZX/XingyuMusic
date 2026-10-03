@@ -30,11 +30,26 @@ const archMap = {
   [Arch.arm64]: 'arm64',
   [Arch.armv7l]: 'arm',
 }
+const fsSync = require('fs')
+const pathMod = require('path')
 module.exports = async(context) => {
   await beforePack()
   const { arch } = context
+  const isWin7 = process.env.BUILD_WIN7 == 'true'
+  // Windows 双版本：把「ABI 匹配的 better-sqlite3（JS + 原生 .node）成套」注入 node_modules，使 asar 内 JS 与 .node 版本自洽、
+  // 且与 node_modules 当前安装状态解耦（可复现）：win7(E22/Node16/ABI110)=v9.6.0；普通(E42/Node24/ABI146)=v13。
+  if (process.platform === 'win32') {
+    const libSrc = pathMod.join(__dirname, 'lib', isWin7 ? 'better-sqlite3-win7' : 'better-sqlite3-x64')
+    const target = pathMod.join(__dirname, '../node_modules/better-sqlite3')
+    if (!fsSync.existsSync(libSrc)) throw new Error(`better-sqlite3 bundle missing: ${libSrc}`)
+    console.log(`[sqlite3] inject ${isWin7 ? 'win7 (v9.6.0 / ABI110)' : 'x64 (v13 / ABI146)'} bundle -> node_modules/better-sqlite3`)
+    fsSync.rmSync(pathMod.join(target, 'build'), { recursive: true, force: true })
+    fsSync.cpSync(libSrc, target, { recursive: true })
+    return
+  }
+  // 其它平台（linux/mac CI）沿用 legacy prebuild/copyLib 流程
   const electronVersion = context.packager?.info?._framework?.version ?? require('../package.json').devDependencies.electron.replace(/^[^\d]*?(\d+)/, '$1')
-  await copyLib(archMap[arch], parseInt(electronVersion) == 22)
+  await copyLib(archMap[arch], isWin7)
   // const electronNodeAbi = nodeAbi.getAbi(electronVersion, 'electron')
   // if (electronPlatformName !== 'linux' || process.env.FORCE) return
   // // const bindingFilePath = path.join(__dirname, '../node_modules/better-sqlite3/binding.gyp')
