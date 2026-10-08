@@ -1,5 +1,7 @@
 import { toOldMusicInfo } from '@/utils'
 import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
 
 export interface Comment {
   id: string
@@ -26,7 +28,7 @@ export interface CommentInfo {
 export const getNewComment = async(musicInfo: LX.Music.MusicInfoOnline, page: number, limit: number, retryNum = 0): Promise<CommentInfo> => {
   let resp
   try {
-    resp = await (music[musicInfo.source].comment.getComment(toOldMusicInfo(musicInfo), page, limit) as Promise<CommentInfo>)
+    resp = await (musicSdk[musicInfo.source].comment.getComment(toOldMusicInfo(musicInfo), page, limit) as Promise<CommentInfo>)
   } catch (error: any) {
     console.log(error.message)
     if (error.message == '取消请求' || ++retryNum > 2) throw error
@@ -38,7 +40,7 @@ export const getNewComment = async(musicInfo: LX.Music.MusicInfoOnline, page: nu
 export const getHotComment = async(musicInfo: LX.Music.MusicInfoOnline, page: number, limit: number, retryNum = 0): Promise<CommentInfo> => {
   let resp
   try {
-    resp = await (music[musicInfo.source].comment.getHotComment(toOldMusicInfo(musicInfo), page, limit) as Promise<CommentInfo>)
+    resp = await (musicSdk[musicInfo.source].comment.getHotComment(toOldMusicInfo(musicInfo), page, limit) as Promise<CommentInfo>)
   } catch (error: any) {
     console.log(error.message)
     if (error.message == '取消请求' || ++retryNum > 2) throw error

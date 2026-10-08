@@ -25,13 +25,14 @@ const eventNames = Object.values(EVENT_NAMES)
 const events = {
   request: null,
 }
-const allSources = ['kw', 'kg', 'tx', 'wy', 'mg', 'local']
+const allSources = ['kw', 'kg', 'tx', 'wy', 'mg', 'bili', 'local']
 const supportQualitys = {
   kw: ['128k', '320k', 'flac', 'flac24bit'],
   kg: ['128k', '320k', 'flac', 'flac24bit'],
   tx: ['128k', '320k', 'flac', 'flac24bit'],
   wy: ['128k', '320k', 'flac', 'flac24bit'],
   mg: ['128k', '320k', 'flac', 'flac24bit'],
+  bili: ['128k'],
   local: [],
 }
 const supportActions = {
@@ -40,6 +41,7 @@ const supportActions = {
   tx: ['musicUrl'],
   wy: ['musicUrl'],
   mg: ['musicUrl'],
+  bili: ['musicUrl'],
   xm: ['musicUrl'],
   local: ['musicUrl', 'lyric', 'pic'],
 }

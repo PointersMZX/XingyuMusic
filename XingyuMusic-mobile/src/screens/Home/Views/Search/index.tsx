@@ -9,6 +9,8 @@ import HeaderBar, { type HeaderBarProps, type HeaderBarType } from './HeaderBar'
 import searchState, { type SearchType } from '@/store/search/state'
 import searchMusicState from '@/store/search/music/state'
 import searchSonglistState from '@/store/search/songlist/state'
+import searchSingerState from '@/store/search/singer/state'
+import searchAlbumState from '@/store/search/album/state'
 import { getSearchSetting, saveSearchSetting } from '@/utils/data'
 import { createStyle } from '@/utils/tools'
 import TipList, { type TipListType } from './TipList'
@@ -19,7 +21,24 @@ import { addHistoryWord } from '@/core/search/search'
 interface SearchInfo {
   temp_source: LX.OnlineSource
   source: LX.OnlineSource | 'all'
-  searchType: 'music' | 'songlist'
+  searchType: SearchType
+}
+
+const getSourceList = (type: SearchType) => {
+  switch (type) {
+    case 'singer':
+      return searchSingerState.sources
+    case 'album':
+      return searchAlbumState.sources
+    case 'songlist':
+      return searchSonglistState.sources
+    default:
+      return searchMusicState.sources
+  }
+}
+
+const normalizeSource = (type: SearchType, source: LX.OnlineSource | 'all') => {
+  return getSourceList(type).includes(source) ? source : 'all'
 }
 
 export default () => {
@@ -34,23 +53,18 @@ export default () => {
     void getSearchSetting().then(info => {
       // info.type = 'music'
       searchInfo.current.temp_source = info.temp_source
-      searchInfo.current.source = info.source
+      searchInfo.current.source = normalizeSource(info.type, info.source)
       searchInfo.current.searchType = info.type
-      switch (info.type) {
-        case 'music':
-          headerBarRef.current?.setSourceList(searchMusicState.sources, info.source)
-          break
-        case 'songlist':
-          headerBarRef.current?.setSourceList(searchSonglistState.sources, info.source)
-          break
-      }
+      headerBarRef.current?.setSourceList(getSourceList(info.type), searchInfo.current.source)
       headerBarRef.current?.setText(searchState.searchText)
       listRef.current?.loadList(searchState.searchText, searchInfo.current.source, searchInfo.current.searchType)
     })
 
     const handleTypeChange = (type: SearchType) => {
       searchInfo.current.searchType = type
+      searchInfo.current.source = normalizeSource(type, searchInfo.current.source)
       void saveSearchSetting({ type })
+      headerBarRef.current?.setSourceList(getSourceList(type), searchInfo.current.source)
       listRef.current?.loadList(searchState.searchText, searchInfo.current.source, type)
     }
     global.app_event.on('searchTypeChanged', handleTypeChange)

@@ -34,6 +34,16 @@ declare global {
       'common.apiSource': string
 
       /**
+       * 渠道音源配置（导入的 `{lines:[...]}` 原文，作为"钥匙"启用官方渠道云解析）
+       */
+      'source.qingtngConfig': string
+
+      /**
+       * 是否启用官方渠道云解析渠道（导入官方渠道 JSON 后置 true）
+       */
+      'source.qingtngEnabled': boolean
+
+      /**
        * 音源名称类型，原名、别名
        */
       'common.sourceNameType': 'alias' | 'real'
@@ -97,6 +107,16 @@ declare global {
        * 优先播放的音质
        */
       'player.playQuality': LX.Quality
+
+      /**
+       * 是否开启边听边缓存（播放中的在线歌曲后台落盘，再次播放直接读盘）
+       */
+      'player.listenCacheEnabled': boolean
+
+      /**
+       * 边听边缓存体积上限（MB），超量按最老文件 LRU 驱逐
+       */
+      'player.listenCacheLimitMB': number
 
       /**
        * 是否显示任务栏进度条

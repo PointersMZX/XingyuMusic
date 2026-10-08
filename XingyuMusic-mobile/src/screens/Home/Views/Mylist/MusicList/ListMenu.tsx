@@ -1,4 +1,6 @@
 import { useRef, useImperativeHandle, forwardRef, useState } from 'react'
+import { createDownloadTask } from '@/core/download/manager'
+
 import { useI18n } from '@/lang'
 import Menu, { type Menus, type MenuType, type Position } from '@/components/common/Menu'
 import { hasDislike } from '@/core/dislikeList'
@@ -71,7 +73,7 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
     const menu = [
       { action: 'play', label: t('play') },
       { action: 'playLater', label: t('play_later') },
-      // { action: 'download', label: '下载' },
+      { action: 'download', disabled: isLocal, label: t('download__menu') },
       { action: 'add', label: t('add_to') },
       { action: 'move', label: t('move_to') },
       { action: 'changePosition', label: t('change_position') },
@@ -111,8 +113,11 @@ export default forwardRef<ListMenuType, ListMenuProps>((props, ref) => {
         break
       case 'playLater':
         props.onPlayLater(selectInfo)
-
         break
+      case 'download':
+        createDownloadTask(selectInfo.musicInfo as LX.Music.MusicInfoOnline)
+        break
+
       case 'add':
         props.onAdd(selectInfo)
         // isMoveRef.current = false

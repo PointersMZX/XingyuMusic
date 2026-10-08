@@ -73,6 +73,7 @@ export default {
         router.push({
           path: '/search',
           query: {
+            ...route.query,
             text: searchText.value,
           },
         }).catch(_ => _)

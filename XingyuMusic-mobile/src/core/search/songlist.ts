@@ -1,6 +1,8 @@
 import searchSonglistState, { type Source, type ListInfoItem } from '@/store/search/songlist/state'
 import searchSonglistActions, { type SearchResult } from '@/store/search/songlist/action'
-import musicSdk from '@/utils/musicSdk'
+import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
 
 export const setSource: typeof searchSonglistActions['setSource'] = (source) => {
   searchSonglistActions.setSource(source)

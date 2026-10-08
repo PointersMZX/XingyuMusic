@@ -9,6 +9,7 @@ import { apis } from '../api-source'
 import songList from './songList'
 import hotSearch from './hotSearch'
 import comment from './comment'
+import singer from './singer'
 
 const kw = {
   _musicInfoRequestObj: null,
@@ -33,6 +34,7 @@ const kw = {
   // },
 
   tipSearch,
+  singer,
   musicSearch,
   leaderboard,
   songList,

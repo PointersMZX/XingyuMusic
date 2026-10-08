@@ -841,3 +841,26 @@ export const downloadTasksRemove = async(ids: string[]) => {
 export const downloadListClear = async() => {
   return rendererInvoke(WIN_MAIN_RENDERER_EVENT_NAME.download_list_clear)
 }
+
+/* ---------------- 边听边缓存（listen-cache） ---------------- */
+
+export const listenCacheExists = async(source: string, id: string, ext: string): Promise<{ exists: boolean, path: string, ext: string }> => {
+  return rendererInvoke<{ source: string, id: string, ext: string }, { exists: boolean, path: string, ext: string }>(
+    WIN_MAIN_RENDERER_EVENT_NAME.listen_cache_exists,
+    { source, id, ext },
+  )
+}
+
+export const listenCacheDownload = async(source: string, id: string, url: string, ext: string, limitMB?: number): Promise<boolean> => {
+  return rendererInvoke<{ source: string, id: string, url: string, ext: string, limitMB?: number }, boolean>(
+    WIN_MAIN_RENDERER_EVENT_NAME.listen_cache_download,
+    { source, id, url, ext, limitMB },
+  )
+}
+
+export const listenCacheClean = async(limitMB?: number): Promise<boolean> => {
+  return rendererInvoke<{ limitMB?: number }, boolean>(
+    WIN_MAIN_RENDERER_EVENT_NAME.listen_cache_clean,
+    { limitMB },
+  )
+}

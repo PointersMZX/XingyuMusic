@@ -1,6 +1,6 @@
 // import { useCommit } from '@common/utils/vueTools'
 import { defaultList } from '@renderer/store/list/state'
-import { getListMusics, addListMusics } from '@renderer/store/list/action'
+import { addListMusics, setTempList } from '@renderer/store/list/action'
 import { addTempPlayList } from '@renderer/store/player/action'
 import { appSetting } from '@renderer/store/setting'
 import { type Ref } from '@common/utils/vueTools'
@@ -18,19 +18,19 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
   let clickTime = 0
   let clickIndex = -1
 
-  const handlePlayMusic = async(index: number, single: boolean) => {
+  const handlePlayMusic = (index: number, single: boolean) => {
     let targetSong = props.list[index]
-    const defaultListMusics = await getListMusics(defaultList.id)
+    // 「我的列表」后台写入，不阻塞播放（治"每次点开要缓存"导致的停顿）
     if (selectedList.value.length && !single) {
-      await addListMusics(defaultList.id, [...selectedList.value])
+      void addListMusics(defaultList.id, [...selectedList.value])
       removeAllSelect()
     } else {
-      await addListMusics(defaultList.id, [targetSong])
+      void addListMusics(defaultList.id, [targetSong])
     }
-    let targetIndex = defaultListMusics.findIndex(s => s.id === targetSong.id)
-    if (targetIndex > -1) {
-      playList(defaultList.id, targetIndex)
-    }
+    // 立即以当前列表为队列播放，不等待 DB 写库完成
+    void setTempList('online_play', props.list).then(() => {
+      playList(LIST_IDS.TEMP, index)
+    })
   }
 
   const handlePlayMusicLater = (index: number, single: boolean) => {
@@ -54,7 +54,7 @@ export default ({ selectedList, props, removeAllSelect, emit }: {
     if (appSetting['list.isClickPlayList']) {
       emit('play-list', index)
     } else {
-      void handlePlayMusic(index, true)
+      handlePlayMusic(index, true)
     }
     clickTime = 0
     clickIndex = -1

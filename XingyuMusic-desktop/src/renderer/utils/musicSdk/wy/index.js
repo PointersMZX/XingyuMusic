@@ -6,6 +6,8 @@ import musicSearch from './musicSearch'
 import songList from './songList'
 import hotSearch from './hotSearch'
 import comment from './comment'
+import singer from './singer'
+import singerSearch from './singerSearch'
 // import tipSearch from './tipSearch'
 
 const wy = {
@@ -15,6 +17,8 @@ const wy = {
   songList,
   hotSearch,
   comment,
+  singer: { ...singer, search: (text, page, limit) => singerSearch.search(text, page, limit, 'singer') },
+  album: { search: (text, page, limit) => singerSearch.search(text, page, limit, 'album') },
   getMusicUrl(songInfo, type) {
     return apis('wy').getMusicUrl(songInfo, type)
   },

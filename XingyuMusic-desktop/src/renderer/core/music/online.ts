@@ -13,6 +13,7 @@ import {
   handleGetOnlinePicUrl,
   getCachedLyricInfo,
 } from './utils'
+import { getListenCacheUrl, startListenCache } from './listenCache'
 
 /* export const setMusicUrl = ({ musicInfo, type, url }: {
   musicInfo: LX.Music.MusicInfo
@@ -52,12 +53,21 @@ export const getMusicUrl = async({ musicInfo, quality, isRefresh, allowToggleSou
   //   // return Promise.reject(new Error('该歌曲没有可播放的音频'))
   // }
   const targetQuality = quality ?? getPlayQuality(appSetting['player.playQuality'], musicInfo)
+
+  // 边听边缓存：命中缓存直接读盘（秒开 + 可离线），不再走 URL 缓存/联网取址
+  if (!isRefresh) {
+    const localUrl = await getListenCacheUrl(musicInfo)
+    if (localUrl) return localUrl
+  }
+
   const cachedUrl = await getStoreMusicUrl(musicInfo, targetQuality)
   if (cachedUrl && !isRefresh) return cachedUrl
 
   return handleGetOnlineMusicUrl({ musicInfo, quality, onToggleSource, isRefresh, allowToggleSource }).then(({ url, quality: targetQuality, musicInfo: targetMusicInfo, isFromCache }) => {
     if (targetMusicInfo.id != musicInfo.id && !isFromCache) void saveMusicUrl(targetMusicInfo, targetQuality, url)
     void saveMusicUrl(musicInfo, targetQuality, url)
+    // 边听边缓存：后台把完整文件落盘，供下次秒开
+    startListenCache(musicInfo, url, targetQuality)
     return url
   })
 }

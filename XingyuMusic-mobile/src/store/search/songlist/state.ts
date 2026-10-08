@@ -4,6 +4,10 @@ import music from '@/utils/musicSdk'
 // import { deduplicationList } from '@common/utils/renderer'
 
 import { type ListInfo } from '@/store/songlist/state'
+const musicSdk = music as unknown as Record<string, any>
+
+
+
 export type { ListInfoItem } from '@/store/songlist/state'
 
 export type SearchListInfo = Omit<ListInfo, 'source' | 'maxPage'>
@@ -43,7 +47,7 @@ const state: InitState = {
 
 export const maxPages: Partial<Record<LX.OnlineSource, number>> = {}
 for (const source of music.sources) {
-  if (!music[source.id as LX.OnlineSource]?.songList?.search) continue
+  if (!musicSdk[source.id]?.songList?.search) continue
   state.sources.push(source.id as LX.OnlineSource)
   state.listInfos[source.id as LX.OnlineSource] = {
     page: 1,

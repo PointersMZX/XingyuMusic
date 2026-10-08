@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Search from '../Views/Search'
 import SongList from '../Views/SongList'
+import Download from '../Views/Download'
 import Local from '../Views/Local'
 import Mylist from '../Views/Mylist'
 import Setting from '../Views/Setting'
@@ -26,6 +27,7 @@ const Main = () => {
     switch (id) {
       case 'nav_songlist': return <SongList />
       case 'nav_local': return <Local />
+      case 'nav_download': return <Download />
       case 'nav_love': return <Mylist />
       case 'nav_setting': return <Setting />
       case 'nav_search':

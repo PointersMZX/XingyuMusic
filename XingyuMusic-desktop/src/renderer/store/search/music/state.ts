@@ -1,5 +1,4 @@
 import { reactive, markRaw } from '@common/utils/vueTools'
-import music from '@renderer/utils/musicSdk'
 
 // import { deduplicationList } from '@common/utils/renderer'
 
@@ -31,10 +30,14 @@ export const listInfos: ListInfos = markRaw({
   }),
 })
 export const maxPages: Partial<Record<LX.OnlineSource, number>> = {}
-for (const source of music.sources) {
-  if (!music[source.id as LX.OnlineSource]?.musicSearch) continue
-  sources.push(source.id as LX.OnlineSource)
-  listInfos[source.id as LX.OnlineSource] = reactive<ListInfo>({
+
+// 综合（排最前）+ 6 线路（星名对应：星记kw/星芸wy/星腾tx/星犬kg/星谷mg/星宝bili）
+export const CHANNELS: LX.OnlineSource[] = markRaw(['kw', 'wy', 'tx', 'kg', 'mg', 'bili'])
+
+sources.push('all')
+for (const ch of CHANNELS) {
+  sources.push(ch)
+  listInfos[ch] = reactive<ListInfo>({
     page: 1,
     maxPage: 0,
     limit: 30,
@@ -43,6 +46,5 @@ for (const source of music.sources) {
     key: '',
     noItemLabel: '',
   })
-  maxPages[source.id as LX.OnlineSource] = 0
+  maxPages[ch] = 0
 }
-sources.push('all')

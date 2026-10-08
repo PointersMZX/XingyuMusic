@@ -1,7 +1,7 @@
 import { LIST_IDS } from '@common/constants'
 import { ref } from '@common/utils/vueTools'
 import { playList } from '@renderer/core/player/action'
-import { getListMusics, addListMusics } from '@renderer/store/list/action'
+import { addListMusics, setTempList } from '@renderer/store/list/action'
 import { addHistoryWord } from '@renderer/store/search/action'
 // import { useI18n } from '@renderer/plugins/i18n'
 // import { } from '@renderer/store/search/state'
@@ -35,17 +35,17 @@ export default () => {
     })
   }
 
-  const handlePlayList = async(index: number) => {
-    let targetSong = listInfo.value.list[index]
+  const handlePlayList = (index: number) => {
+    const targetSong = listInfo.value.list[index]
 
     if (!assertApiSupport(targetSong.source)) return
 
-    const defaultListMusics = await getListMusics(LIST_IDS.DEFAULT)
-
-    await addListMusics(LIST_IDS.DEFAULT, [targetSong])
-
-    let targetIndex = defaultListMusics.findIndex(s => s.id === targetSong.id)
-    if (targetIndex > -1) playList(LIST_IDS.DEFAULT, targetIndex)
+    // 「我的列表」后台写入，不阻塞播放（治"每次点开要缓存"导致的停顿）
+    void addListMusics(LIST_IDS.DEFAULT, [targetSong])
+    // 立即以当前搜索结果列表为队列播放，不等待 DB 写库完成
+    void setTempList('search_play', listInfo.value.list as LX.Music.MusicInfoOnline[]).then(() => {
+      playList(LIST_IDS.TEMP, index)
+    })
   }
 
   return {

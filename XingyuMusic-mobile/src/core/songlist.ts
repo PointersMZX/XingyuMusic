@@ -1,7 +1,8 @@
 import songlistState, { type TagInfo, type ListDetailInfo, type ListInfo } from '@/store/songlist/state'
 import songlistActions from '@/store/songlist/action'
 import { deduplicationList, toNewMusicInfo } from '@/utils'
-import musicSdk from '@/utils/musicSdk'
+import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
 
 
 interface DetailPageCache { data: ListDetailInfo, sourcePage: number }

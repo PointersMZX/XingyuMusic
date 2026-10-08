@@ -129,6 +129,11 @@ declare global {
       'player.playQuality': LX.Quality
 
       /**
+       * 是否开启边听边缓存（播放中的在线歌曲后台落盘，再次播放直接读盘）
+       */
+      'player.listenCacheEnabled': boolean
+
+      /**
        * 启动软件时是否恢复上次播放进度
        */
       'player.isSavePlayTime': boolean

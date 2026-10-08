@@ -16,6 +16,14 @@ import { apis } from '@renderer/utils/musicSdk/api-source'
 const getOtherSourcePromises = new Map()
 const otherSourceCache = new Map<LX.Music.MusicInfo | LX.Download.ListItem, LX.Music.MusicInfoOnline[]>()
 export const existTimeExp = /\[\d{1,2}:.*\d{1,4}\]/
+// 换源候选上限：只对前 2 个候选源做取 URL/歌词，避免"总是想着换源"逐个全源搜
+const MAX_OTHER_SOURCE_CANDIDATES = 2
+export const emptyLyricInfo = (): LX.Music.LyricInfo => ({
+  lyric: '',
+  tlyric: '',
+  rlyric: '',
+  lxlyric: '',
+})
 
 export const getOtherSource = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<LX.Music.MusicInfoOnline[]> => {
   // if (!isRefresh && musicInfo.id) {
@@ -56,7 +64,7 @@ export const getOtherSource = async(musicInfo: LX.Music.MusicInfo | LX.Download.
     let timeout: null | NodeJS.Timeout = setTimeout(() => {
       timeout = null
       reject(new Error('find music timeout'))
-    }, 15_000)
+    }, 4_000)
     musicSdk.findMusic(searchMusicInfo).then((otherSource) => {
       if (otherSourceCache.size > 10) otherSourceCache.clear()
       const source = otherSource.map(toNewMusicInfo) as LX.Music.MusicInfoOnline[]
@@ -124,7 +132,10 @@ export const buildLyricInfo = async(lyricInfo: MakeOptional<LX.Player.LyricInfo,
 
 export const getCachedLyricInfo = async(musicInfo: LX.Music.MusicInfo): Promise<LX.Player.LyricInfo | null> => {
   let lrcInfo = await getStoreLyric(musicInfo)
-  // lrcInfo = {} as unknown as LX.Player.LyricInfo
+  // 显式缓存的"无歌词"（纯音乐等）：直接命中，不再走联网+跨源搜
+  if (lrcInfo.lyric === '') {
+    return lrcInfo
+  }
   if (existTimeExp.test(lrcInfo.lyric)) {
     if (lrcInfo.tlyric != null) {
       // if (musicInfo.lrc.startsWith('\ufeff[id:$00000000]')) {
@@ -319,9 +330,10 @@ export const handleGetOnlineMusicUrl = async({ musicInfo, quality, onToggleSourc
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     return getOtherSource(musicInfo).then(otherSource => {
       console.log('find otherSource', otherSource)
-      if (otherSource.length) {
+      const candidates = otherSource.slice(0, MAX_OTHER_SOURCE_CANDIDATES)
+      if (candidates.length) {
         return getOnlineOtherSourceMusicUrl({
-          musicInfos: [...otherSource],
+          musicInfos: [...candidates],
           onToggleSource,
           quality,
           isRefresh,
@@ -437,7 +449,7 @@ export const getOnlineOtherSourceLyricInfo = async({ musicInfos, onToggleSource,
     onToggleSource(musicInfo)
     break
   }
-  if (!musicInfo) throw new Error(window.i18n.t('toggle_source_failed'))
+  if (!musicInfo) return { musicInfo: musicInfos[0] ?? emptyLyricInfo() as unknown as LX.Music.MusicInfoOnline, lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo, isFromCache: false }
 
   if (!isRefresh) {
     const lyricInfo = await getCachedLyricInfo(musicInfo)
@@ -454,15 +466,26 @@ export const getOnlineOtherSourceLyricInfo = async({ musicInfos, onToggleSource,
   // retryedSource.includes(musicInfo.source)
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   return reqPromise.then((lyricInfo: LX.Music.LyricInfo) => {
-    return existTimeExp.test(lyricInfo.lyric) ? {
-      lyricInfo,
+    // 接受空歌词（纯音乐等）；不再因缺少时间轴而触发跨源搜
+    const normalized: LX.Music.LyricInfo = {
+      lyric: lyricInfo.lyric ?? '',
+      tlyric: lyricInfo.tlyric ?? '',
+      rlyric: lyricInfo.rlyric ?? '',
+      lxlyric: lyricInfo.lxlyric ?? '',
+    }
+    return {
+      lyricInfo: normalized,
       musicInfo,
       isFromCache: false,
-    } : Promise.reject(new Error('failed'))
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
+    }
   }).catch((err: any) => {
     console.log(err)
-    return getOnlineOtherSourceLyricInfo({ musicInfos, onToggleSource, isRefresh, retryedSource })
+    // 换源候选封顶，末次失败静默返空歌词（不报错、不弹"歌词获取失败"）
+    const remaining = musicInfos.slice(0, MAX_OTHER_SOURCE_CANDIDATES)
+    if (remaining.length) {
+      return getOnlineOtherSourceLyricInfo({ musicInfos: remaining, onToggleSource, isRefresh, retryedSource })
+    }
+    return { musicInfo, lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo, isFromCache: false }
   })
 }
 
@@ -489,28 +512,39 @@ export const handleGetOnlineLyricInfo = async({ musicInfo, onToggleSource, isRef
   }
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   return reqPromise.then((lyricInfo: LX.Music.LyricInfo) => {
-    return existTimeExp.test(lyricInfo.lyric) ? {
+    // 接受空歌词（纯音乐）；只有真正拿到带时间轴的歌词才走"有歌词"分支，否则按"无歌词"静默处理
+    const hasTimeAxis = existTimeExp.test(lyricInfo.lyric ?? '')
+    if (!hasTimeAxis) {
+      return {
+        musicInfo,
+        lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo,
+        isFromCache: false,
+      }
+    }
+    return {
       musicInfo,
       lyricInfo,
       isFromCache: false,
-    } : Promise.reject(new Error('failed'))
+    }
   }).catch(async(err: any) => {
     console.log(err)
-    if (!allowToggleSource) throw err
+    if (!allowToggleSource) return { musicInfo, lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo, isFromCache: false }
 
     onToggleSource()
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    return getOtherSource(musicInfo).then(otherSource => {
-      console.log('find otherSource', otherSource)
-      if (otherSource.length) {
-        return getOnlineOtherSourceLyricInfo({
-          musicInfos: [...otherSource],
+    const otherSource = await getOtherSource(musicInfo).catch(() => [])
+    const candidates = otherSource.slice(0, MAX_OTHER_SOURCE_CANDIDATES)
+    if (candidates.length) {
+      try {
+        return await getOnlineOtherSourceLyricInfo({
+          musicInfos: [...candidates],
           onToggleSource,
           isRefresh,
           retryedSource: [musicInfo.source],
         })
+      } catch {
+        return { musicInfo, lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo, isFromCache: false }
       }
-      throw err
-    })
+    }
+    return { musicInfo, lyricInfo: emptyLyricInfo() as unknown as LX.Music.LyricInfo, isFromCache: false }
   })
 }

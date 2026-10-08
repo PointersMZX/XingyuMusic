@@ -111,9 +111,16 @@ export const search = async(text: string, page: number, sourceId: LX.OnlineSourc
     })
   } else {
     if (listInfo?.key == key && listInfo?.list.length) return listInfo?.list
+    const fn = music[sourceId]?.musicSearch?.search
+    if (!fn) {
+      // 该线路不支持歌曲检索 → 显示「无」
+      resetListInfo(sourceId)
+      listInfo!.noItemLabel = window.i18n.t('search__none')
+      return []
+    }
     listInfo!.noItemLabel = window.i18n.t('list__loading')
     listInfo!.key = key
-    return music[sourceId].musicSearch.search(text, page, listInfo!.limit).then((data: SearchResult) => {
+    return fn(text, page, listInfo!.limit).then((data: SearchResult) => {
       if (key != listInfo!.key) return []
       return setList(data, page, text)
     }).catch((error: any) => {

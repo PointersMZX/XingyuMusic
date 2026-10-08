@@ -1,5 +1,7 @@
 import { reactive, markRaw } from '@common/utils/vueTools'
 import music from '@renderer/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
 
 // import { deduplicationList } from '@common/utils/renderer'
 
@@ -17,7 +19,7 @@ export const sourceList: SourceLists = markRaw({
 
 
 for (const source of music.sources) {
-  if (!music[source.id as LX.OnlineSource]?.hotSearch) continue
+  if (!musicSdk[source.id]?.hotSearch) continue
   sources.push(source.id as LX.OnlineSource)
   sourceList[source.id as LX.OnlineSource] = reactive<string[]>([])
 }
@@ -52,7 +54,7 @@ export const getList = async(source: Source): Promise<string[]> => {
       task.push(
         sourceList[source]?.length
           ? Promise.resolve({ source, list: sourceList[source] })
-          : (music[source]?.hotSearch.getList() ?? Promise.reject(new Error('source not found: ' + source))).catch((err: any) => {
+          : (musicSdk[source]?.hotSearch.getList() ?? Promise.reject(new Error('source not found: ' + source))).catch((err: any) => {
               console.log(err)
               return { source, list: [] }
             }),
@@ -63,11 +65,11 @@ export const getList = async(source: Source): Promise<string[]> => {
     })
   } else {
     if (sourceList[source]?.length) return Promise.resolve(sourceList[source])
-    if (!music[source]?.hotSearch) {
+    if (!musicSdk[source]?.hotSearch) {
       setList(source, [])
       return Promise.resolve([])
     }
-    return music[source]?.hotSearch.getList().then(data => setList(source, data.list))
+    return musicSdk[source]?.hotSearch.getList().then((data: any) => setList(source, data.list))
   }
 }
 

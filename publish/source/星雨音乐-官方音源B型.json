@@ -1,0 +1,10 @@
+{
+  "lines": [
+    { "id": "kw", "name": "星记", "displayName": "酷我", "levels": ["standard", "exhigh", "lossless"], "enabled": true, "quality": "exhigh" },
+    { "id": "wy", "name": "星芸", "displayName": "网易云", "levels": ["standard", "exhigh", "lossless", "hires"], "enabled": true, "quality": "exhigh" },
+    { "id": "qq", "name": "星腾", "displayName": "QQ音乐", "levels": ["standard", "exhigh", "lossless", "hires"], "enabled": true, "quality": "exhigh" },
+    { "id": "kg", "name": "星犬", "displayName": "酷狗", "levels": ["standard", "exhigh"], "enabled": true, "quality": "exhigh" },
+    { "id": "mg", "name": "星谷", "displayName": "咪咕", "levels": ["standard", "exhigh", "lossless"], "enabled": true, "quality": "exhigh" },
+    { "id": "bili", "name": "星宝", "displayName": "哔哩", "levels": ["bili192"], "enabled": true, "quality": "bili192" }
+  ]
+}

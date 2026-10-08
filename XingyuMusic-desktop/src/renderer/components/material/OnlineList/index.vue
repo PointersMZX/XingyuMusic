@@ -236,7 +236,7 @@ export default {
           handleShowDownloadModal(index, true)
           break
         case 'play':
-          void handlePlayMusic(index, true)
+          handlePlayMusic(index, true)
           break
         case 'search':
           handleSearch(index)

@@ -1,6 +1,7 @@
 // import { getSongListSetting } from '@renderer/utils/data'
 import { deduplicationList, toNewMusicInfo } from '@renderer/utils'
-import musicSdk from '@renderer/utils/musicSdk'
+import music from '@renderer/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
 import { markRaw, markRawList } from '@common/utils/vueTools'
 import {
   tags,

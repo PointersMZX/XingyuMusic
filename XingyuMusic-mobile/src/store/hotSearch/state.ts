@@ -1,4 +1,5 @@
-import musicSdk from '@/utils/musicSdk'
+import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
 
 // import { deduplicationList } from '@common/utils/renderer'
 

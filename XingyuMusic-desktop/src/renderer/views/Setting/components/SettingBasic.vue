@@ -37,17 +37,19 @@ dd
 
 dd
   h3#basic_source {{ $t('setting__basic_source') }}
-  div
-    .gap-top(v-for="item in apiSources" :key="item.id")
-      base-checkbox(
-        :id="`setting_api_source_${item.id}`" name="setting_api_source"
-        need :model-value="appSetting['common.apiSource']" :disabled="item.disabled" :value="item.id" :aria-label="item.label" @update:model-value="updateSetting({'common.apiSource': $event})")
-        span(:class="$style.sourceLabel")
-          | {{ item.name }}
-          span(v-if="item.desc" :class="$style.desc") {{ item.desc }}
-          span(v-if="item.statusLabel" :class="$style.status") {{ item.statusLabel }}
-    .p.gap-top
-      base-btn.btn(min @click="isShowUserApiModal = true") {{ $t('setting__basic_source_user_api_btn') }}
+  div(:class="$style.sourceCard")
+    .gap-top(:class="$style.sourceModel")
+      p(:class="$style.sourceCardTitle") {{ $t('user_api__type_a_title') }}
+      p(:class="$style.sourceHint") {{ $t('user_api__type_a_desc') }}
+      div(:class="$style.actionRow")
+        base-btn.btn(min @click="isShowUserApiModal = true") {{ $t('user_api__btn_import_js') }}
+        base-btn.btn(min @click="isShowUserApiModal = true") {{ $t('user_api__manage_js') }}
+    .gap-top(:class="$style.sourceModel")
+      p(:class="$style.sourceCardTitle") {{ $t('user_api__type_b_title') }}
+      p(:class="$style.sourceHint") {{ $t('user_api__type_b_desc') }}
+      div(:class="$style.actionRow")
+        base-btn.btn(min @click="importOfficialB") {{ $t('user_api__btn_import_b') }}
+        span(v-if="officialActive" :class="$style.status") {{ $t('user_api__official_b_active') }}
 
 dd
   h3#basic_window_size {{ $t('setting__basic_window_size') }}
@@ -115,10 +117,13 @@ user-api-modal(v-model="isShowUserApiModal")
 import { computed, ref, watch, reactive, shallowReactive } from '@common/utils/vueTools'
 import { windowSizeList, userApi, isFullscreen, themeId } from '@renderer/store'
 import { langList, useI18n } from '@root/lang'
-import { getSystemFonts } from '@renderer/utils/ipc'
+import { getSystemFonts, showSelectDialog } from '@renderer/utils/ipc'
+import { readFile } from '@common/utils/nodejs'
 import apiSourceInfo from '@renderer/utils/musicSdk/api-source-info'
 import { useTimeout } from '@renderer/core/player/timeoutStop'
 import { dialog } from '@renderer/plugins/Dialog'
+import { saveQingCloudConfig } from '@renderer/core/apiSource'
+import { validateQingLines } from '@renderer/utils/musicSdk/qingCloud'
 
 import ThemeSelectorModal from './ThemeSelectorModal.vue'
 import ThemeEditModal from './ThemeEditModal/index.vue'
@@ -250,6 +255,28 @@ export default {
     const { timeLabel } = useTimeout()
 
     const isShowUserApiModal = ref(false)
+    const importOfficialB = () => {
+      void showSelectDialog({
+        title: t('user_api__import_qingcloud_file'),
+        properties: ['openFile'],
+        filters: [
+          { name: 'JSON', extensions: ['json'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      }).then(async(result) => {
+        if (result?.canceled) return
+        const data = await readFile(result.filePaths[0])
+        const text = data.toString()
+        const valid = validateQingLines(text)
+        if (!valid.ok) {
+          void dialog(t('user_api__qingcloud_import_failed', { message: valid.error }))
+          return
+        }
+        saveQingCloudConfig(text)
+        void dialog(t('user_api__qingcloud_import_ok'))
+      })
+    }
+    const officialActive = computed(() => !!appSetting['source.qingtngConfig'])
     const getApiStatus = () => {
       let status
       if (userApi.status) status = t('setting__basic_source_status_success')
@@ -259,7 +286,17 @@ export default {
       return status
     }
     const apiSources = computed(() => {
+      const officialActive = !!appSetting['source.qingtngConfig']
+      const officialIsCurrent = appSetting['common.apiSource'] == 'user_api_qingcloud'
       return [
+        ...(officialActive ? [{
+          id: 'user_api_qingcloud',
+          name: t('user_api__official_b_name'),
+          label: t('user_api__official_b_name'),
+          desc: t('user_api__official_b_desc'),
+          statusLabel: officialIsCurrent ? `[${t('user_api__official_b_active')}]` : '',
+          disabled: false,
+        }] : []),
         ...apiSourceInfo.map(api => ({
           id: api.id,
           name: api.name,
@@ -344,6 +381,8 @@ export default {
       timeLabel,
       apiSources,
       isShowUserApiModal,
+      importOfficialB,
+      officialActive,
       windowSizeList,
       langList,
       sourceNameTypes,
@@ -549,7 +588,64 @@ export default {
 
   .status {
     margin-left: 5px;
+    color: var(--color-primary);
+    font-size: 12px;
   }
+}
+
+.sourceCard {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: var(--color-button-background);
+  border: 1px solid var(--color-content-border, rgba(255, 255, 255, 0.08));
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+.sourceModel {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border: 1px solid var(--color-content-border, rgba(255, 255, 255, 0.08));
+  .actionRow {
+    margin-top: 10px;
+  }
+}
+
+.sourceCardTitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-font);
+}
+
+.sourceItem {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 4px 6px;
+  &:hover {
+    background-color: var(--color-button-background-hover);
+  }
+}
+
+.actionRow {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 10px;
+  margin-top: 12px;
+  base-btn {
+    flex: none;
+    min-width: 132px;
+  }
+}
+
+.sourceHint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-font-label);
+  margin: 6px 4px 0;
 }
 
 </style>

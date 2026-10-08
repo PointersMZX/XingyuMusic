@@ -1,6 +1,8 @@
 import hotSearchState, { type Source } from '@/store/hotSearch/state'
 import hotSearchActions, { type Lists } from '@/store/hotSearch/action'
-import musicSdk from '@/utils/musicSdk'
+import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
 
 export const getList = async(source: Source): Promise<string[]> => {
   if (source == 'all') {
@@ -29,7 +31,7 @@ export const getList = async(source: Source): Promise<string[]> => {
       console.log(err)
       return { source, list: [] }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    }).then(data => hotSearchActions.setList(source, data.list))
+    }).then((data: any) => hotSearchActions.setList(source, data.list))
   }
 }
 

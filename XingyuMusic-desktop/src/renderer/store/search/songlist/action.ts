@@ -1,5 +1,7 @@
 import { markRawList } from '@common/utils/vueTools'
 import music from '@renderer/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
 import { sortInsert, similar } from '@common/utils/common'
 
 import type { ListInfoItem } from './state'
@@ -96,7 +98,7 @@ export const search = async(text: string, page: number, sourceId: LX.OnlineSourc
     let task = []
     for (const source of sources) {
       if (source == 'all' || (page > 1 && page > (maxPages[source]!))) continue
-      task.push((music[source]?.songList.search(text, page, listInfos.all.limit) ?? Promise.reject(new Error('source not found: ' + source))).catch((error: any) => {
+      task.push((musicSdk[source]?.songList?.search(text, page, listInfos.all.limit) ?? Promise.reject(new Error('source not found: ' + source))).catch((error: any) => {
         console.log(error)
         return {
           list: [],
@@ -112,12 +114,19 @@ export const search = async(text: string, page: number, sourceId: LX.OnlineSourc
     })
   } else {
     if (listInfo?.key == key && listInfo?.list.length) return listInfo?.list
+    const fn = musicSdk[sourceId]?.songList?.search
+    if (!fn) {
+      // 该线路不支持歌单检索 → 显示「无」
+      resetListInfo(sourceId)
+      listInfo.noItemLabel = window.i18n.t('search__none')
+      return []
+    }
     listInfo.noItemLabel = window.i18n.t('list__loading')
     listInfo.key = key
-    return (music[sourceId]?.songList.search(text, page, listInfo.limit).then((data: SearchResult) => {
+    return fn(text, page, listInfo.limit).then((data: SearchResult) => {
       if (key != listInfo.key) return []
       return setList(data, page, text)
-    }) ?? Promise.reject(new Error('source not found: ' + sourceId))).catch((error: any) => {
+    }).catch((error: any) => {
       resetListInfo(sourceId)
       listInfo.noItemLabel = window.i18n.t('list__load_failed')
       console.log(error)

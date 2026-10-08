@@ -149,6 +149,10 @@ const modules = {
     download_list_update: 'download_list_update',
     download_list_remove: 'download_list_remove',
     download_list_clear: 'download_list_clear',
+
+    listen_cache_exists: 'listen_cache_exists',
+    listen_cache_download: 'listen_cache_download',
+    listen_cache_clean: 'listen_cache_clean',
   },
   winLyric: {
     close: 'close',

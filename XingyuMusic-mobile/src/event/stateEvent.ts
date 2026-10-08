@@ -121,6 +121,13 @@ export class StateEvent extends Event {
   sourceNamesUpdated(names: CommonState['sourceNames']) {
     this.emit('sourceNamesUpdated', names)
   }
+
+  /**
+   * 下载任务列表更新
+   */
+  downloadTasksUpdated(tasks: unknown[]) {
+    this.emit('downloadTasksUpdated', tasks)
+  }
 }
 
 

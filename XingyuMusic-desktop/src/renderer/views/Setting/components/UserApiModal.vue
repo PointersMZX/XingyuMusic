@@ -22,10 +22,11 @@ material-modal(:show="modelValue" bg-close teleport="#view" @close="handleClose"
         | {{ $t('user_api__readme') }}
         span.hover.underline(aria-label="https://lxmusic.toside.cn/desktop/custom-source" @click="handleOpenUrl('https://lyswhut.github.io/lx-music-doc/desktop/custom-source')") FAQ
       p {{ $t('user_api__note') }}
+      p(v-if="qingCloudStatus" :class="$style.qingStatus") {{ qingCloudStatus }}
     div(:class="$style.footer")
       base-btn(:class="$style.footerBtn" @click="isShowOnlineImportModal = true") {{ $t('user_api__btn_import_online') }}
       base-btn(:class="$style.footerBtn" @click="handleImport") {{ $t('user_api__btn_import') }}
-      //- base-btn(:class="$style.footerBtn" @click="handleExport") {{ $t('user_api__btn_export') }}
+      base-btn(:class="$style.footerBtn" @click="handleImportQingCloud") {{ $t('user_api__btn_import_qingcloud') }}
     UserApiOnlineImportModal(v-model:show="isShowOnlineImportModal" @import="importUserApi")
 </template>
 
@@ -34,10 +35,12 @@ import { importUserApi, removeUserApi, showSelectDialog, setAllowShowUserApiUpda
 import { readFile } from '@common/utils/nodejs'
 import { openUrl } from '@common/utils/electron'
 import apiSourceInfo from '@renderer/utils/musicSdk/api-source-info'
-import { userApi } from '@renderer/store'
+import { userApi, sourceNames } from '@renderer/store'
 import { appSetting, updateSetting } from '@renderer/store/setting'
 import { computed, ref } from '@common/utils/vueTools'
 import { dialog } from '@renderer/plugins/Dialog'
+import { saveQingCloudConfig, disableQingCloud } from '@renderer/core/apiSource'
+import { validateQingLines } from '@renderer/utils/musicSdk/qingCloud'
 
 import UserApiOnlineImportModal from './UserApiOnlineImportModal.vue'
 
@@ -55,21 +58,58 @@ export default {
   setup() {
     const isShowOnlineImportModal = ref(false)
     const apiList = computed(() => userApi.list)
+    const qingCloudStatus = computed(() => {
+      const config = appSetting['source.qingtngConfig']
+      if (!config) return ''
+      const valid = validateQingLines(config)
+      if (!valid.ok) return this.$t('user_api__qingcloud_invalid', { message: valid.error })
+      const names = Object.keys(valid.lines).map(id => sourceNames.value[id] ?? id).join('、')
+      return this.$t('user_api__qingcloud_enabled', { channels: names })
+    })
 
     return {
       userApi,
       apiList,
       appSetting,
+      qingCloudStatus,
       isShowOnlineImportModal,
     }
   },
   methods: {
     async importUserApi(script) {
-      return importUserApi(script).then(({ apiList }) => {
-        userApi.list = apiList
-      }).catch((err) => {
+      try {
+        const result = await importUserApi(script)
+        userApi.list = result.apiList
+      } catch (err) {
         void dialog(this.$t('user_api_import__failed', { message: err.message }))
+      }
+    },
+    handleImportQingCloud() {
+      void showSelectDialog({
+        title: this.$t('user_api__import_qingcloud_file'),
+        properties: ['openFile'],
+        filters: [
+          { name: 'Qing Cloud Config', extensions: ['json'] },
+          { name: 'All Files', extensions: ['*'] },
+        ],
+      }).then(async result => {
+        if (result.canceled) return
+        const data = await readFile(result.filePaths[0])
+        this.importQingCloud(data.toString())
       })
+    },
+    importQingCloud(jsonText) {
+      const valid = validateQingLines(jsonText)
+      if (!valid.ok) {
+        void dialog(this.$t('user_api__qingcloud_import_failed', { message: valid.error }))
+        return
+      }
+      saveQingCloudConfig(jsonText)
+      void dialog(this.$t('user_api__qingcloud_import_ok'))
+    },
+    handleDisableQingCloud() {
+      disableQingCloud()
+      void dialog(this.$t('user_api__qingcloud_disabled'))
     },
     handleImport() {
       if (this.userApi.list.length > 20) {

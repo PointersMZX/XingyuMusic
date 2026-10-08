@@ -4,6 +4,7 @@ import Search from '../Views/Search'
 import SongList from '../Views/SongList'
 import Local from '../Views/Local'
 import Mylist from '../Views/Mylist'
+import Download from '../Views/Download'
 import Setting from '../Views/Setting'
 import commonState, { type InitState as CommonState } from '@/store/common/state'
 import { createStyle } from '@/utils/tools'
@@ -88,6 +89,27 @@ const SongListPage = () => {
   return visible ? component : null
   // return activeId == 1 || activeId == 0  ? SongList : null
 }
+const DownloadPage = () => {
+  const [visible, setVisible] = useState(commonState.navActiveId == 'nav_download')
+  const component = useMemo(() => <Download />, [])
+  useEffect(() => {
+    const handleNavIdUpdate = (id: CommonState['navActiveId']) => {
+      if (id == 'nav_download') {
+        requestAnimationFrame(() => {
+          setVisible(true)
+        })
+      }
+    }
+    global.state_event.on('navActiveIdUpdated', handleNavIdUpdate)
+
+    return () => {
+      global.state_event.off('navActiveIdUpdated', handleNavIdUpdate)
+    }
+  }, [])
+
+  return visible ? component : null
+}
+
 const LocalPage = () => {
   const [visible, setVisible] = useState(commonState.navActiveId == 'nav_local')
   const component = useMemo(() => <Local />, [])
@@ -181,13 +203,15 @@ const SettingPage = () => {
 const viewMap = {
   nav_search: 0,
   nav_songlist: 1,
-  nav_local: 2,
-  nav_love: 3,
-  nav_setting: 4,
+  nav_download: 2,
+  nav_local: 3,
+  nav_love: 4,
+  nav_setting: 5,
 }
 const indexMap = [
   'nav_search',
   'nav_songlist',
+  'nav_download',
   'nav_local',
   'nav_love',
   'nav_setting',
@@ -279,6 +303,9 @@ const Main = () => {
       </View>
       <View collapsable={false} key="nav_songlist" style={styles.pageStyle}>
         <SongListPage />
+      </View>
+      <View collapsable={false} key="nav_download" style={styles.pageStyle}>
+        <DownloadPage />
       </View>
       <View collapsable={false} key="nav_local" style={styles.pageStyle}>
         <LocalPage />

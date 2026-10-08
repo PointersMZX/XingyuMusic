@@ -70,7 +70,7 @@ const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, i
     const time = getRandom(2, 6)
     setAllStatus(window.i18n.t('player__getting_url_delay_retry', { time }))
     const tiemout = setTimeout(() => {
-      getMusicPlayUrl(musicInfo, isRefresh, true).then((result) => {
+      getMusicPlayUrl(musicInfo, isRefresh).then((result) => {
         cancelDelayRetry = null
         resolve(result)
       }).catch(async(err: any) => {
@@ -85,7 +85,7 @@ const delayRetry = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, i
     }
   })
 }
-const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false, isRetryed = false): Promise<string | null> => {
+const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListItem, isRefresh = false): Promise<string | null> => {
   // this.musicInfo.url = await getMusicPlayUrl(targetSong, type)
   setAllStatus(window.i18n.t('player__getting_url'))
   if (appSetting['player.autoSkipOnError']) addLoadTimeout()
@@ -119,8 +119,7 @@ const getMusicPlayUrl = async(musicInfo: LX.Music.MusicInfo | LX.Download.ListIt
 
     if (err.message == requestMsg.tooManyRequests) return delayRetry(musicInfo, isRefresh)
 
-    if (!isRetryed) return getMusicPlayUrl(musicInfo, isRefresh, true)
-
+    // 不再整条链路二次重跑（避免"总是想着换源"的循环）：单次已做有界换源，失败即交回上层处理
     throw err
   })
 }
@@ -177,7 +176,9 @@ const handleRestorePlay = async(restorePlayInfo: LX.Player.SavedPlayInfo) => {
   }).catch((err) => {
     console.log(err)
     if (musicInfo.id != playMusicInfo.musicInfo?.id) return
-    setAllStatus(window.i18n.t('lyric__load_error'))
+    // 歌词获取失败静默处理（纯音乐/无歌词不再报"歌词获取失败"），歌词面板走"暂无歌词"空态
+    setMusicInfo({ lrc: '', tlrc: '', lxlrc: '', rlrc: '', rawlrc: '' })
+    window.app_event.lyricUpdated()
   })
 
   if (appSetting['player.togglePlayMethod'] == 'random' && !playMusicInfo.isTempPlay) addPlayedList({ ...playMusicInfo as LX.Player.PlayMusicInfo })
@@ -228,7 +229,9 @@ const handlePlay = () => {
   }).catch((err) => {
     console.log(err)
     if (musicInfo.id != playMusicInfo.musicInfo?.id) return
-    setAllStatus(window.i18n.t('lyric__load_error'))
+    // 歌词获取失败静默处理（纯音乐/无歌词不再报"歌词获取失败"），歌词面板走"暂无歌词"空态
+    setMusicInfo({ lrc: '', tlrc: '', lxlrc: '', rlrc: '', rawlrc: '' })
+    window.app_event.lyricUpdated()
   })
 }
 

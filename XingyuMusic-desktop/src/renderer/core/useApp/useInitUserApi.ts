@@ -5,7 +5,7 @@ import { openUrl } from '@common/utils/electron'
 import { qualityList, userApi } from '@renderer/store'
 import { appSetting } from '@renderer/store/setting'
 import { dialog } from '@renderer/plugins/Dialog'
-import { setUserApi } from '@renderer/core/apiSource'
+import { setUserApi, applyQingCloud } from '@renderer/core/apiSource'
 
 const sendUserApiRequest: typeof sendUserApiRequestRemote = async(data) => {
   let stop: () => void
@@ -172,6 +172,7 @@ export default () => {
 
   return async() => {
     await setUserApi(appSetting['common.apiSource'])
+    if (appSetting['source.qingtngConfig']) applyQingCloud()
     void getUserApiList().then(list => {
       // console.log(list)
       // if (![...apiSourceInfo.map(s => s.id), ...list.map(s => s.id)].includes(appSetting['common.apiSource'])) {

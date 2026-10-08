@@ -1,4 +1,7 @@
 import music from '@/utils/musicSdk'
+const musicSdk = music as unknown as Record<string, any>
+
+
 
 export declare interface SortInfo {
   name: string
@@ -114,7 +117,7 @@ const state: InitState = {
 
 
 for (const source of music.sources) {
-  const songList = music[source.id as Source]?.songList
+  const songList = musicSdk[source.id]?.songList
   if (!songList) continue
   state.sources.push(source.id as Source)
   state.sortList[source.id as Source] = songList.sortList as SortInfo[]
