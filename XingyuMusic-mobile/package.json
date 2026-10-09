@@ -1,7 +1,7 @@
 {
   "name": "XingyuMusic",
-  "version": "1.0.0-Beta.2",
-  "versionCode": 6,
+  "version": "1.1.0-Beta.2",
+  "versionCode": 5,
   "private": true,
   "scripts": {
     "dev": "react-native run-android --active-arch-only",
